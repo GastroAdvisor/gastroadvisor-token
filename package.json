@@ -16,6 +16,7 @@
     "lint:all": "npm run lint && npm run lint:sol",
     "lint:all:fix": "npm run lint:fix && npm run lint:sol:fix",
     "console": "truffle console",
+    "coverage": "scripts/coverage.sh",
     "version": "scripts/version.js"
   },
   "repository": {
@@ -56,6 +57,7 @@
     "ganache-cli": "^6.1.0",
     "lite-server": "^2.3.0",
     "openzeppelin-solidity": "1.10.0",
+    "solidity-coverage": "^0.5.4",
     "solium": "^1.1.7",
     "truffle": "^4.1.11",
     "truffle-contract": "^3.0.4",
