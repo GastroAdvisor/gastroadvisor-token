@@ -1,0 +1,17 @@
+{
+  "package_name": "gastroadvisor-token",
+  "version": "1.0.0",
+  "description": "Smart Contracts for the FORK token issued by https://www.gastroadvisor.com",
+  "authors": [
+    "Vittorio Minacori (@vittominacori)"
+  ],
+  "keywords": [
+    "solidity",
+    "ethereum",
+    "smart",
+    "contracts",
+    "token",
+    "erc20"
+  ],
+  "license": "MIT"
+}
