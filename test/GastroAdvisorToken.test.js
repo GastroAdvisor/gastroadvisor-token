@@ -118,7 +118,7 @@ contract('GastroAdvisorToken', function ([owner, anotherAccount, minter, recipie
 
       await assertRevert(this.token.transferFromAndCall(
         owner, message.contract.address, 100, extraData, { from: anotherAccount, value: 1000 }
-        )
+      )
       );
     });
 
