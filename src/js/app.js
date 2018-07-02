@@ -29,6 +29,14 @@ App = {
       // Set the provider for our contract.
       App.contracts.GastroAdvisorToken.setProvider(App.web3Provider);
     });
+
+    $.getJSON('CappedBountyMinter.json', function (data) {
+      // Get the necessary contract artifact file and instantiate it with truffle-contract.
+      App.contracts.CappedBountyMinter = TruffleContract(data);
+
+      // Set the provider for our contract.
+      App.contracts.CappedBountyMinter.setProvider(App.web3Provider);
+    });
   },
 };
 
