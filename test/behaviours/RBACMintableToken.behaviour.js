@@ -1,4 +1,4 @@
-import expectThrow from '../helpers/expectThrow';
+import assertRevert from '../helpers/assertRevert';
 
 const ROLE_MINTER = 'minter';
 
@@ -15,12 +15,12 @@ export default function ([owner, anotherAccount]) {
     });
 
     it('another account can\'t add or remove a minter role', async function () {
-      await expectThrow(
+      await assertRevert(
         this.token.addMinter(anotherAccount, { from: anotherAccount })
       );
 
       await this.token.addMinter(anotherAccount, { from: owner });
-      await expectThrow(
+      await assertRevert(
         this.token.removeMinter(anotherAccount, { from: anotherAccount })
       );
     });
