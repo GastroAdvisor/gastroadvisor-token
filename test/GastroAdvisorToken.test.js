@@ -17,7 +17,7 @@ require('chai')
 const Message = artifacts.require('MessageHelper');
 const GastroAdvisorToken = artifacts.require('GastroAdvisorToken');
 
-contract('GastroAdvisorToken', function ([owner, anotherAccount, minter, recipient]) {
+contract('GastroAdvisorToken', function ([owner, anotherAccount, minter, recipient, thirdParty]) {
   beforeEach(async function () {
     this.token = await GastroAdvisorToken.new({ from: owner });
   });
@@ -153,27 +153,42 @@ contract('GastroAdvisorToken', function ([owner, anotherAccount, minter, recipie
     });
   });
 
-  describe('safe functions', function () {
-    it('should safe transfer any ERC20 sent for error into the contract', async function () {
-      const anotherERC20 = await GastroAdvisorToken.new({ from: owner });
+  context('safe functions', function () {
+    describe('transferAnyERC20Token', function () {
+      let anotherERC20;
+      let tokenAmount = new BigNumber(1000);
 
-      const tokenAmount = 1000;
+      beforeEach(async function () {
+        anotherERC20 = await GastroAdvisorToken.new({ from: owner });
 
-      await anotherERC20.addMinter(minter, { from: owner });
-      await anotherERC20.mint(this.token.address, tokenAmount, { from: minter });
-      await anotherERC20.finishMinting({ from: owner });
+        await anotherERC20.addMinter(minter, { from: owner });
+        await anotherERC20.mint(this.token.address, tokenAmount, { from: minter });
+        await anotherERC20.finishMinting({ from: owner });
+      });
 
-      const contractPre = await anotherERC20.balanceOf(this.token.address);
-      assert.equal(contractPre, tokenAmount);
-      const ownerPre = await anotherERC20.balanceOf(owner);
-      assert.equal(ownerPre, 0);
+      describe('if owner is calling', function () {
+        it('should safe transfer any ERC20 sent for error into the contract', async function () {
+          const contractPre = await anotherERC20.balanceOf(this.token.address);
+          contractPre.should.be.bignumber.equal(tokenAmount);
+          const ownerPre = await anotherERC20.balanceOf(owner);
+          ownerPre.should.be.bignumber.equal(0);
 
-      await this.token.transferAnyERC20Token(anotherERC20.address, tokenAmount, { from: owner });
+          await this.token.transferAnyERC20Token(anotherERC20.address, tokenAmount, { from: owner });
 
-      const contractPost = await anotherERC20.balanceOf(this.token.address);
-      assert.equal(contractPost, 0);
-      const ownerPost = await anotherERC20.balanceOf(owner);
-      assert.equal(ownerPost, tokenAmount);
+          const contractPost = await anotherERC20.balanceOf(this.token.address);
+          contractPost.should.be.bignumber.equal(0);
+          const ownerPost = await anotherERC20.balanceOf(owner);
+          ownerPost.should.be.bignumber.equal(tokenAmount);
+        });
+      });
+
+      describe('if third party is calling', function () {
+        it('reverts', async function () {
+          await assertRevert(
+            this.token.transferAnyERC20Token(anotherERC20.address, tokenAmount, { from: thirdParty })
+          );
+        });
+      });
     });
   });
 });

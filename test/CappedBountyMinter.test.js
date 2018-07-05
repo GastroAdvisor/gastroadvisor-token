@@ -13,12 +13,16 @@ const GastroAdvisorToken = artifacts.require('GastroAdvisorToken');
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 contract('CappedBountyMinter', function (
-  [tokenOwner, bountyOwner, anotherAccount, receiver1, receiver2, receiver3]
+  [tokenOwner, bountyOwner, anotherAccount, receiver1, receiver2, receiver3, thirdParty]
 ) {
   const cap = new BigNumber(20000);
 
   const addresses = [receiver1, receiver2, receiver3];
-  const amounts = [100, 200, 300];
+  const amounts = [
+    new BigNumber(100),
+    new BigNumber(200),
+    new BigNumber(300),
+  ];
 
   beforeEach(async function () {
     this.token = await GastroAdvisorToken.new({ from: tokenOwner });
@@ -36,7 +40,7 @@ contract('CappedBountyMinter', function (
       it('has a valid cap', async function () {
         const bountyCap = await this.bounty.cap();
         bountyCap.should.be.bignumber.equal(
-          new BigNumber(cap.valueOf() * Math.pow(10, this.decimals))
+          cap.mul(Math.pow(10, this.decimals))
         );
       });
     });
@@ -71,8 +75,8 @@ contract('CappedBountyMinter', function (
         for (let arrayIndex in addresses) {
           let receiverBalance = await this.token.balanceOf(addresses[arrayIndex]);
 
-          let excpectedToken = amounts[arrayIndex] * Math.pow(10, this.decimals);
-          receiverBalance.should.be.bignumber.equal(new BigNumber(excpectedToken));
+          let expectedTokens = amounts[arrayIndex].mul(Math.pow(10, this.decimals));
+          receiverBalance.should.be.bignumber.equal(expectedTokens);
         }
       });
 
@@ -87,34 +91,34 @@ contract('CappedBountyMinter', function (
         for (let arrayIndex in addresses) {
           let givenBountyTokens = await this.bounty.givenBountyTokens(addresses[arrayIndex]);
 
-          let excpectedToken = amounts[arrayIndex] * Math.pow(10, this.decimals);
-          givenBountyTokens.should.be.bignumber.equal(new BigNumber(excpectedToken));
+          let expectedTokens = amounts[arrayIndex].mul(Math.pow(10, this.decimals));
+          givenBountyTokens.should.be.bignumber.equal(expectedTokens);
         }
       });
 
       it('should increase totalGivenBountyTokens', async function () {
-        let totalGivenTokens = 0;
+        let totalGivenTokens = new BigNumber(0);
 
         await this.bounty.multiSend(addresses, amounts, { from: bountyOwner });
 
         for (let arrayIndex in amounts) {
-          totalGivenTokens += amounts[arrayIndex] * Math.pow(10, this.decimals);
+          totalGivenTokens = totalGivenTokens.plus(amounts[arrayIndex].mul(Math.pow(10, this.decimals)));
         }
         const totalGivenBountyTokens = await this.bounty.totalGivenBountyTokens();
-        totalGivenBountyTokens.should.be.bignumber.equal(new BigNumber(totalGivenTokens));
+        totalGivenBountyTokens.should.be.bignumber.equal(totalGivenTokens);
       });
 
       it('should decrease remainingTokens', async function () {
-        let totalGivenTokens = 0;
+        let totalGivenTokens = new BigNumber(0);
 
         await this.bounty.multiSend(addresses, amounts, { from: bountyOwner });
 
         for (let arrayIndex in amounts) {
-          totalGivenTokens += amounts[arrayIndex] * Math.pow(10, this.decimals);
+          totalGivenTokens = totalGivenTokens.plus(amounts[arrayIndex].mul(Math.pow(10, this.decimals)));
         }
         const remainingTokens = await this.bounty.remainingTokens();
         remainingTokens.should.be.bignumber.equal(
-          new BigNumber(cap.valueOf() * Math.pow(10, this.decimals)).sub(totalGivenTokens)
+          cap.mul(Math.pow(10, this.decimals)).sub(totalGivenTokens)
         );
       });
 
@@ -131,8 +135,8 @@ contract('CappedBountyMinter', function (
           for (let arrayIndex in addresses) {
             let receiverBalance = await this.token.balanceOf(addresses[arrayIndex]);
 
-            let excpectedToken = amounts[arrayIndex] * Math.pow(10, this.decimals);
-            receiverBalance.should.be.bignumber.equal(new BigNumber(excpectedToken).mul(2));
+            let expectedTokens = amounts[arrayIndex].mul(Math.pow(10, this.decimals));
+            receiverBalance.should.be.bignumber.equal(expectedTokens.mul(2));
           }
         });
 
@@ -148,22 +152,22 @@ contract('CappedBountyMinter', function (
           for (let arrayIndex in addresses) {
             let givenBountyTokens = await this.bounty.givenBountyTokens(addresses[arrayIndex]);
 
-            let excpectedToken = amounts[arrayIndex] * Math.pow(10, this.decimals);
-            givenBountyTokens.should.be.bignumber.equal(new BigNumber(excpectedToken).mul(2));
+            let expectedTokens = amounts[arrayIndex].mul(Math.pow(10, this.decimals));
+            givenBountyTokens.should.be.bignumber.equal(expectedTokens.mul(2));
           }
         });
 
         it('should increase totalGivenBountyTokens', async function () {
-          let totalGivenTokens = 0;
+          let totalGivenTokens = new BigNumber(0);
 
           await this.bounty.multiSend(addresses, amounts, { from: bountyOwner });
           await this.bounty.multiSend(addresses, amounts, { from: bountyOwner });
 
           for (let arrayIndex in amounts) {
-            totalGivenTokens += amounts[arrayIndex] * Math.pow(10, this.decimals);
+            totalGivenTokens = totalGivenTokens.plus(amounts[arrayIndex].mul(Math.pow(10, this.decimals)));
           }
           const totalGivenBountyTokens = await this.bounty.totalGivenBountyTokens();
-          totalGivenBountyTokens.should.be.bignumber.equal(new BigNumber(totalGivenTokens).mul(2));
+          totalGivenBountyTokens.should.be.bignumber.equal(totalGivenTokens.mul(2));
         });
       });
 
@@ -218,27 +222,42 @@ contract('CappedBountyMinter', function (
     });
   });
 
-  describe('safe functions', function () {
-    it('should safe transfer any ERC20 sent for error into the contract', async function () {
-      const anotherERC20 = await GastroAdvisorToken.new({ from: tokenOwner });
+  context('safe functions', function () {
+    describe('transferAnyERC20Token', function () {
+      let anotherERC20;
+      let tokenAmount = new BigNumber(1000);
 
-      const tokenAmount = 1000;
+      beforeEach(async function () {
+        anotherERC20 = await GastroAdvisorToken.new({ from: tokenOwner });
 
-      await anotherERC20.addMinter(tokenOwner, { from: tokenOwner });
-      await anotherERC20.mint(this.bounty.address, tokenAmount, { from: tokenOwner });
-      await anotherERC20.finishMinting({ from: tokenOwner });
+        await anotherERC20.addMinter(tokenOwner, { from: tokenOwner });
+        await anotherERC20.mint(this.bounty.address, tokenAmount, { from: tokenOwner });
+        await anotherERC20.finishMinting({ from: tokenOwner });
+      });
 
-      const contractPre = await anotherERC20.balanceOf(this.bounty.address);
-      assert.equal(contractPre, tokenAmount);
-      const ownerPre = await anotherERC20.balanceOf(tokenOwner);
-      assert.equal(ownerPre, 0);
+      describe('if owner is calling', function () {
+        it('should safe transfer any ERC20 sent for error into the contract', async function () {
+          const contractPre = await anotherERC20.balanceOf(this.bounty.address);
+          contractPre.should.be.bignumber.equal(tokenAmount);
+          const ownerPre = await anotherERC20.balanceOf(tokenOwner);
+          ownerPre.should.be.bignumber.equal(0);
 
-      await this.bounty.transferAnyERC20Token(anotherERC20.address, tokenAmount, { from: bountyOwner });
+          await this.bounty.transferAnyERC20Token(anotherERC20.address, tokenAmount, { from: bountyOwner });
 
-      const contractPost = await anotherERC20.balanceOf(this.bounty.address);
-      assert.equal(contractPost, 0);
-      const ownerPost = await anotherERC20.balanceOf(bountyOwner);
-      assert.equal(ownerPost, tokenAmount);
+          const contractPost = await anotherERC20.balanceOf(this.bounty.address);
+          contractPost.should.be.bignumber.equal(0);
+          const ownerPost = await anotherERC20.balanceOf(bountyOwner);
+          ownerPost.should.be.bignumber.equal(tokenAmount);
+        });
+      });
+
+      describe('if third party is calling', function () {
+        it('reverts', async function () {
+          await assertRevert(
+            this.bounty.transferAnyERC20Token(anotherERC20.address, tokenAmount, { from: thirdParty })
+          );
+        });
+      });
     });
   });
 });

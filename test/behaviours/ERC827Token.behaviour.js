@@ -1,4 +1,4 @@
-import EVMRevert from '../helpers/EVMRevert';
+import assertRevert from '../helpers/assertRevert';
 const Message = artifacts.require('MessageHelper');
 
 const BigNumber = web3.BigNumber;
@@ -31,7 +31,7 @@ export default function (accounts) {
   });
 
   it('should throw an error when trying to transfer more than balance', async function () {
-    await this.token.transfer(accounts[1], 101).should.be.rejectedWith(EVMRevert);
+    await assertRevert(this.token.transfer(accounts[1], 101));
   });
 
   it('should return correct balances after transfering from another account', async function () {
@@ -50,19 +50,23 @@ export default function (accounts) {
 
   it('should throw an error when trying to transfer more than allowed', async function () {
     await this.token.approve(accounts[1], 99);
-    await this.token.transferFrom(
-      accounts[0], accounts[2], 100,
-      { from: accounts[1] }
-    ).should.be.rejectedWith(EVMRevert);
+    await assertRevert(
+      this.token.transferFrom(
+        accounts[0], accounts[2], 100,
+        { from: accounts[1] }
+      )
+    );
   });
 
   it('should throw an error when trying to transferFrom more than _from has', async function () {
     let balance0 = await this.token.balanceOf(accounts[0]);
     await this.token.approve(accounts[1], 99);
-    await this.token.transferFrom(
-      accounts[0], accounts[2], balance0 + 1,
-      { from: accounts[1] }
-    ).should.be.rejectedWith(EVMRevert);
+    await assertRevert(
+      this.token.transferFrom(
+        accounts[0], accounts[2], balance0 + 1,
+        { from: accounts[1] }
+      )
+    );
   });
 
   describe('validating allowance updates to spender', function () {
@@ -91,13 +95,14 @@ export default function (accounts) {
   });
 
   it('should throw an error when trying to transfer to 0x0', async function () {
-    await this.token.transfer(0x0, 100).should.be.rejectedWith(EVMRevert);
+    await assertRevert(this.token.transfer(0x0, 100));
   });
 
   it('should throw an error when trying to transferFrom to 0x0', async function () {
     await this.token.approve(accounts[1], 100);
-    await this.token.transferFrom(accounts[0], 0x0, 100, { from: accounts[1] })
-      .should.be.rejectedWith(EVMRevert);
+    await assertRevert(
+      this.token.transferFrom(accounts[0], 0x0, 100, { from: accounts[1] })
+    );
   });
 
   describe('Test ERC827 methods', function () {
@@ -240,15 +245,19 @@ export default function (accounts) {
         web3.toHex(123456), 666, 'Transfer Done'
       );
 
-      await this.token.approveAndCall(
-        message.contract.address, 10, extraData, { from: accounts[0], value: 1000 }
-      ).should.be.rejectedWith(EVMRevert);
+      await assertRevert(
+        this.token.approveAndCall(
+          message.contract.address, 10, extraData, { from: accounts[0], value: 1000 }
+        )
+      );
 
       // approval should not have gone through so allowance is still 0
-      new BigNumber(0).should.be.bignumber
-        .equal(await this.token.allowance(accounts[1], message.contract.address));
-      new BigNumber(0).should.be.bignumber
-        .equal(await web3.eth.getBalance(message.contract.address));
+      new BigNumber(0).should.be.bignumber.equal(
+        await this.token.allowance(accounts[1], message.contract.address)
+      );
+      new BigNumber(0).should.be.bignumber.equal(
+        await web3.eth.getBalance(message.contract.address)
+      );
     });
 
     it('should revert funds of failure inside transfer (with data)', async function () {
@@ -258,15 +267,19 @@ export default function (accounts) {
         web3.toHex(123456), 666, 'Transfer Done'
       );
 
-      await this.token.transferAndCall(
-        message.contract.address, 10, extraData, { from: accounts[0], value: 1000 }
-      ).should.be.rejectedWith(EVMRevert);
+      await assertRevert(
+        this.token.transferAndCall(
+          message.contract.address, 10, extraData, { from: accounts[0], value: 1000 }
+        )
+      );
 
       // transfer should not have gone through, so balance is still 0
-      new BigNumber(0).should.be.bignumber
-        .equal(await this.token.balanceOf(message.contract.address));
-      new BigNumber(0).should.be.bignumber
-        .equal(await web3.eth.getBalance(message.contract.address));
+      new BigNumber(0).should.be.bignumber.equal(
+        await this.token.balanceOf(message.contract.address)
+      );
+      new BigNumber(0).should.be.bignumber.equal(
+        await web3.eth.getBalance(message.contract.address)
+      );
     });
 
     it('should revert funds of failure inside transferFrom (with data)', async function () {
@@ -278,17 +291,22 @@ export default function (accounts) {
 
       await this.token.approve(accounts[1], 10, { from: accounts[2] });
 
-      await this.token.transferFromAndCall(
-        accounts[2], message.contract.address, 10, extraData, { from: accounts[2], value: 1000 }
-      ).should.be.rejectedWith(EVMRevert);
+      await assertRevert(
+        this.token.transferFromAndCall(
+          accounts[2], message.contract.address, 10, extraData, { from: accounts[2], value: 1000 }
+        )
+      );
 
       // transferFrom should have failed so balance is still 0 but allowance is 10
-      new BigNumber(10).should.be.bignumber
-        .equal(await this.token.allowance(accounts[2], accounts[1]));
-      new BigNumber(0).should.be.bignumber
-        .equal(await this.token.balanceOf(message.contract.address));
-      new BigNumber(0).should.be.bignumber
-        .equal(await web3.eth.getBalance(message.contract.address));
+      new BigNumber(10).should.be.bignumber.equal(
+        await this.token.allowance(accounts[2], accounts[1])
+      );
+      new BigNumber(0).should.be.bignumber.equal(
+        await this.token.balanceOf(message.contract.address)
+      );
+      new BigNumber(0).should.be.bignumber.equal(
+        await web3.eth.getBalance(message.contract.address)
+      );
     });
 
     it(
@@ -406,12 +424,14 @@ export default function (accounts) {
 
       const extraData = message.contract.fail.getData();
 
-      await this.token.approveAndCall(message.contract.address, 10, extraData)
-        .should.be.rejectedWith(EVMRevert);
+      await assertRevert(
+        this.token.approveAndCall(message.contract.address, 10, extraData)
+      );
 
       // approval should not have gone through so allowance is still 0
-      new BigNumber(0).should.be.bignumber
-        .equal(await this.token.allowance(accounts[1], message.contract.address));
+      new BigNumber(0).should.be.bignumber.equal(
+        await this.token.allowance(accounts[1], message.contract.address)
+      );
     });
 
     it('should fail inside transfer (with data)', async function () {
@@ -419,12 +439,14 @@ export default function (accounts) {
 
       const extraData = message.contract.fail.getData();
 
-      await this.token.transferAndCall(message.contract.address, 10, extraData)
-        .should.be.rejectedWith(EVMRevert);
+      await assertRevert(
+        this.token.transferAndCall(message.contract.address, 10, extraData)
+      );
 
       // transfer should not have gone through, so balance is still 0
-      new BigNumber(0).should.be.bignumber
-        .equal(await this.token.balanceOf(message.contract.address));
+      new BigNumber(0).should.be.bignumber.equal(
+        await this.token.balanceOf(message.contract.address)
+      );
     });
 
     it('should fail inside transferFrom (with data)', async function () {
@@ -433,14 +455,17 @@ export default function (accounts) {
       const extraData = message.contract.fail.getData();
 
       await this.token.approve(accounts[1], 10, { from: accounts[2] });
-      await this.token.transferFromAndCall(accounts[2], message.contract.address, 10, extraData, { from: accounts[1] })
-        .should.be.rejectedWith(EVMRevert);
+      await assertRevert(
+        this.token.transferFromAndCall(accounts[2], message.contract.address, 10, extraData, { from: accounts[1] })
+      );
 
       // transferFrom should have failed so balance is still 0 but allowance is 10
-      new BigNumber(10).should.be.bignumber
-        .equal(await this.token.allowance(accounts[2], accounts[1]));
-      new BigNumber(0).should.be.bignumber
-        .equal(await this.token.balanceOf(message.contract.address));
+      new BigNumber(10).should.be.bignumber.equal(
+        await this.token.allowance(accounts[2], accounts[1])
+      );
+      new BigNumber(0).should.be.bignumber.equal(
+        await this.token.balanceOf(message.contract.address)
+      );
     });
 
     it('should fail approve (with data) when using this.token contract address as receiver', async function () {
@@ -450,8 +475,9 @@ export default function (accounts) {
         web3.toHex(123456), 666, 'Transfer Done'
       );
 
-      await this.token.approveAndCall(this.token.contract.address, 100, extraData, { from: accounts[0] })
-        .should.be.rejectedWith(EVMRevert);
+      await assertRevert(
+        this.token.approveAndCall(this.token.contract.address, 100, extraData, { from: accounts[0] })
+      );
     });
 
     it('should fail transfer (with data) when using this.token contract address as receiver', async function () {
@@ -461,8 +487,9 @@ export default function (accounts) {
         web3.toHex(123456), 666, 'Transfer Done'
       );
 
-      await this.token.transferAndCall(this.token.contract.address, 100, extraData)
-        .should.be.rejectedWith(EVMRevert);
+      await assertRevert(
+        this.token.transferAndCall(this.token.contract.address, 100, extraData)
+      );
     });
 
     it('should fail transferFrom (with data) when using this.token contract address as receiver', async function () {
@@ -474,10 +501,11 @@ export default function (accounts) {
 
       await this.token.approve(accounts[1], 1, { from: accounts[0] });
 
-      await this.token.transferFromAndCall(
-        accounts[0], this.token.contract.address, 1, extraData, { from: accounts[1] }
-      )
-        .should.be.rejectedWith(EVMRevert);
+      await assertRevert(
+        this.token.transferFromAndCall(
+          accounts[0], this.token.contract.address, 1, extraData, { from: accounts[1] }
+        )
+      );
     });
   });
 }
