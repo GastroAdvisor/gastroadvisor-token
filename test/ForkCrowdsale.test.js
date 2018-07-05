@@ -24,9 +24,9 @@ const ROLE_MINTER = 'minter';
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 contract('ForkCrowdsale', function ([owner, investor, wallet, purchaser, thirdParty]) {
-  const rate = new BigNumber(100);
+  const rate = new BigNumber(10);
   const value = ether(1);
-  const tokenCap = new BigNumber(1000);
+  const tokenCap = new BigNumber(100);
 
   before(async function () {
     // Advance to the next block to correctly read time in the solidity "now" function interpreted by testrpc
@@ -234,6 +234,81 @@ contract('ForkCrowdsale', function ([owner, investor, wallet, purchaser, thirdPa
 
         contributorsLength = await this.contributions.getContributorsLength();
         assert.equal(contributorsLength, 1);
+      });
+    });
+
+    context('check statuses', function () {
+      describe('before start', function () {
+        it('started should be false', async function () {
+          const toTest = await this.crowdsale.started();
+          assert.equal(toTest, false);
+        });
+
+        it('ended should be false', async function () {
+          const toTest = await this.crowdsale.ended();
+          assert.equal(toTest, false);
+        });
+
+        it('capReached should be false', async function () {
+          const toTest = await this.crowdsale.capReached();
+          assert.equal(toTest, false);
+        });
+      });
+
+      describe('after start and before end', function () {
+        beforeEach(async function () {
+          await increaseTimeTo(this.openingTime);
+        });
+
+        it('started should be true', async function () {
+          const toTest = await this.crowdsale.started();
+          assert.equal(toTest, true);
+        });
+
+        describe('if cap not reached', function () {
+          it('ended should be false', async function () {
+            const toTest = await this.crowdsale.ended();
+            assert.equal(toTest, false);
+          });
+
+          it('capReached should be false', async function () {
+            const toTest = await this.crowdsale.capReached();
+            assert.equal(toTest, false);
+          });
+        });
+
+        describe('if cap reached', function () {
+          beforeEach(async function () {
+            const cap = await this.crowdsale.cap();
+            await this.crowdsale.send(cap);
+          });
+
+          it('ended should be true', async function () {
+            const toTest = await this.crowdsale.ended();
+            assert.equal(toTest, true);
+          });
+
+          it('capReached should be true', async function () {
+            const toTest = await this.crowdsale.capReached();
+            assert.equal(toTest, true);
+          });
+        });
+      });
+
+      describe('after end', function () {
+        beforeEach(async function () {
+          await increaseTimeTo(this.afterClosingTime);
+        });
+
+        it('started should be true', async function () {
+          const toTest = await this.crowdsale.started();
+          assert.equal(toTest, true);
+        });
+
+        it('ended should be true', async function () {
+          const toTest = await this.crowdsale.ended();
+          assert.equal(toTest, true);
+        });
       });
     });
   });
