@@ -76,7 +76,7 @@ contract('ForkCrowdsale', function ([owner, investor, wallet, purchaser, thirdPa
     beforeEach(async function () {
       await increaseTimeTo(this.openingTime);
     });
-    shouldBehaveLikeCappedCrowdsale();
+    shouldBehaveLikeCappedCrowdsale([investor, purchaser]);
   });
 
   context('like a ForkCrowdsale', function () {

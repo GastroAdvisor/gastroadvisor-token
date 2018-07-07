@@ -19,19 +19,19 @@ export default function ([owner, investor, wallet, purchaser], rate, value) {
 
   describe('accepting payments', function () {
     it('should reject payments before start', async function () {
-      await assertRevert(this.crowdsale.send(value));
+      await assertRevert(this.crowdsale.sendTransaction({ value: value, from: investor }));
       await assertRevert(this.crowdsale.buyTokens(investor, { from: purchaser, value: value }));
     });
 
     it('should accept payments after start', async function () {
       await increaseTimeTo(this.openingTime);
-      await this.crowdsale.send(value).should.be.fulfilled;
+      await this.crowdsale.sendTransaction({ value: value, from: investor }).should.be.fulfilled;
       await this.crowdsale.buyTokens(investor, { value: value, from: purchaser }).should.be.fulfilled;
     });
 
     it('should reject payments after end', async function () {
       await increaseTimeTo(this.afterClosingTime);
-      await assertRevert(this.crowdsale.send(value));
+      await assertRevert(this.crowdsale.sendTransaction({ value: value, from: investor }));
       await assertRevert(this.crowdsale.buyTokens(investor, { value: value, from: purchaser }));
     });
   });

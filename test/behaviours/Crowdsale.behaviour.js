@@ -10,7 +10,7 @@ export default function ([owner, investor, wallet, purchaser], rate, value) {
 
   describe('accepting payments', function () {
     it('should accept payments', async function () {
-      await this.crowdsale.send(value).should.be.fulfilled;
+      await this.crowdsale.sendTransaction({ value: value, from: investor }).should.be.fulfilled;
       await this.crowdsale.buyTokens(investor, { value: value, from: purchaser }).should.be.fulfilled;
     });
   });

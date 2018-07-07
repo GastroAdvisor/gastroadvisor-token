@@ -28,7 +28,7 @@ contract ForkCrowdsale is TimedCrowdsale, MintedCrowdsale, Ownable {
   public
   {
     require(_contributions != address(0));
-    require(_tokenCap != 0);
+    require(_tokenCap > 0);
 
     cap = (_tokenCap * (10 ** 18)).div(_rate);
 

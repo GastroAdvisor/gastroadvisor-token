@@ -7,7 +7,7 @@ require('chai')
   .use(require('chai-bignumber')(BigNumber))
   .should();
 
-export default function () {
+export default function ([investor, purchaser]) {
   let cap;
   let lessThanCap;
 
@@ -17,18 +17,39 @@ export default function () {
   });
 
   describe('accepting payments', function () {
-    it('should accept payments within cap', async function () {
-      await this.crowdsale.send(cap.minus(lessThanCap)).should.be.fulfilled;
-      await this.crowdsale.send(lessThanCap).should.be.fulfilled;
+    describe('high-level purchase', function () {
+      it('should accept payments within cap', async function () {
+        await this.crowdsale.sendTransaction({ value: cap.minus(lessThanCap), from: investor }).should.be.fulfilled;
+        await this.crowdsale.sendTransaction({ value: lessThanCap, from: investor }).should.be.fulfilled;
+      });
+
+      it('should reject payments outside cap', async function () {
+        await this.crowdsale.sendTransaction({ value: cap, from: investor });
+        await assertRevert(this.crowdsale.sendTransaction({ value: 1, from: investor }));
+      });
+
+      it('should reject payments that exceed cap', async function () {
+        await assertRevert(this.crowdsale.sendTransaction({ value: cap.plus(1), from: investor }));
+      });
     });
 
-    it('should reject payments outside cap', async function () {
-      await this.crowdsale.send(cap);
-      await assertRevert(this.crowdsale.send(1));
-    });
+    describe('low-level purchase', function () {
+      it('should accept payments within cap', async function () {
+        await this.crowdsale.buyTokens(investor, {
+          value: cap.minus(lessThanCap),
+          from: purchaser,
+        }).should.be.fulfilled;
+        await this.crowdsale.buyTokens(investor, { value: lessThanCap, from: purchaser }).should.be.fulfilled;
+      });
 
-    it('should reject payments that exceed cap', async function () {
-      await assertRevert(this.crowdsale.send(cap.plus(1)));
+      it('should reject payments outside cap', async function () {
+        await this.crowdsale.buyTokens(investor, { value: cap, from: purchaser });
+        await assertRevert(this.crowdsale.buyTokens(investor, { value: 1, from: purchaser }));
+      });
+
+      it('should reject payments that exceed cap', async function () {
+        await assertRevert(this.crowdsale.buyTokens(investor, { value: cap.plus(1), from: purchaser }));
+      });
     });
   });
 
@@ -36,19 +57,19 @@ export default function () {
     it('should not reach cap if sent under cap', async function () {
       let capReached = await this.crowdsale.capReached();
       capReached.should.equal(false);
-      await this.crowdsale.send(lessThanCap);
+      await this.crowdsale.sendTransaction({ value: lessThanCap, from: investor });
       capReached = await this.crowdsale.capReached();
       capReached.should.equal(false);
     });
 
     it('should not reach cap if sent just under cap', async function () {
-      await this.crowdsale.send(cap.minus(1));
+      await this.crowdsale.sendTransaction({ value: cap.minus(1), from: investor });
       let capReached = await this.crowdsale.capReached();
       capReached.should.equal(false);
     });
 
     it('should reach cap if cap sent', async function () {
-      await this.crowdsale.send(cap);
+      await this.crowdsale.sendTransaction({ value: cap, from: investor });
       let capReached = await this.crowdsale.capReached();
       capReached.should.equal(true);
     });
