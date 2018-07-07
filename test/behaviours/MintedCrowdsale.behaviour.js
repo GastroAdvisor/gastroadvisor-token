@@ -53,7 +53,7 @@ export default function ([owner, investor, wallet, purchaser], rate, value) {
 
     it('should assign tokens to sender', async function () {
       await this.crowdsale.buyTokens(investor, { value: value, from: purchaser });
-      let balance = await this.token.balanceOf(investor);
+      const balance = await this.token.balanceOf(investor);
       balance.should.be.bignumber.equal(expectedTokenAmount);
     });
 

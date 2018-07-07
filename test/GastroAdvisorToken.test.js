@@ -16,6 +16,7 @@ require('chai')
 
 const Message = artifacts.require('MessageHelper');
 const GastroAdvisorToken = artifacts.require('GastroAdvisorToken');
+const MintableToken = artifacts.require('MintableToken');
 
 contract('GastroAdvisorToken', function ([owner, anotherAccount, minter, recipient, thirdParty]) {
   beforeEach(async function () {
@@ -159,11 +160,8 @@ contract('GastroAdvisorToken', function ([owner, anotherAccount, minter, recipie
       let tokenAmount = new BigNumber(1000);
 
       beforeEach(async function () {
-        anotherERC20 = await GastroAdvisorToken.new({ from: owner });
-
-        await anotherERC20.addMinter(minter, { from: owner });
-        await anotherERC20.mint(this.token.address, tokenAmount, { from: minter });
-        await anotherERC20.finishMinting({ from: owner });
+        anotherERC20 = await MintableToken.new({ from: owner });
+        await anotherERC20.mint(this.token.address, tokenAmount, { from: owner });
       });
 
       describe('if owner is calling', function () {

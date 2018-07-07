@@ -9,6 +9,7 @@ require('chai')
 
 const CappedBountyMinter = artifacts.require('CappedBountyMinter');
 const GastroAdvisorToken = artifacts.require('GastroAdvisorToken');
+const MintableToken = artifacts.require('MintableToken');
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
@@ -228,11 +229,8 @@ contract('CappedBountyMinter', function (
       let tokenAmount = new BigNumber(1000);
 
       beforeEach(async function () {
-        anotherERC20 = await GastroAdvisorToken.new({ from: tokenOwner });
-
-        await anotherERC20.addMinter(tokenOwner, { from: tokenOwner });
+        anotherERC20 = await MintableToken.new({ from: tokenOwner });
         await anotherERC20.mint(this.bounty.address, tokenAmount, { from: tokenOwner });
-        await anotherERC20.finishMinting({ from: tokenOwner });
       });
 
       describe('if owner is calling', function () {
