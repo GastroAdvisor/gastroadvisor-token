@@ -10,7 +10,7 @@ contract ForkICO is DefaultCrowdsale {
     uint256 _endTime,
     uint256 _rate,
     address _wallet,
-    uint256 _cap,
+    uint256 _tokenCap,
     address _token,
     address _contributions
   )
@@ -19,7 +19,7 @@ contract ForkICO is DefaultCrowdsale {
     _endTime,
     _rate,
     _wallet,
-    _cap,
+    _tokenCap,
     _token,
     _contributions
   )
