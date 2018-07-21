@@ -72,6 +72,55 @@ export default function ([owner, investor, wallet, purchaser, thirdParty], rate)
       });
     });
 
+    describe('high-level purchase', function () {
+      beforeEach(async function () {
+        await increaseTimeTo(this.openingTime);
+      });
+
+      it('should add beneficiary to contributions list', async function () {
+        let contributorsLength = await this.contributions.getContributorsLength();
+        assert.equal(contributorsLength, 0);
+
+        const preTokenBalance = await this.contributions.tokenBalances(investor);
+        preTokenBalance.should.be.bignumber.equal(0);
+        const preEthBalance = await this.contributions.ethContributions(investor);
+        preEthBalance.should.be.bignumber.equal(0);
+
+        await this.crowdsale.sendTransaction({ value: value, from: investor });
+
+        const postOneTokenBalance = await this.contributions.tokenBalances(investor);
+        postOneTokenBalance.should.be.bignumber.equal(value.mul(rate));
+        const postOneEthBalance = await this.contributions.ethContributions(investor);
+        postOneEthBalance.should.be.bignumber.equal(value);
+
+        await this.crowdsale.sendTransaction({ value: value, from: investor });
+
+        const postTwoTokenBalance = await this.contributions.tokenBalances(investor);
+        (postTwoTokenBalance.sub(postOneTokenBalance)).should.be.bignumber.equal(value.mul(rate));
+        postTwoTokenBalance.should.be.bignumber.equal(value.mul(2).mul(rate));
+        const postTwoEthBalance = await this.contributions.ethContributions(investor);
+        (postTwoEthBalance.sub(postOneEthBalance)).should.be.bignumber.equal(value);
+        postTwoEthBalance.should.be.bignumber.equal(value.mul(2));
+
+        contributorsLength = await this.contributions.getContributorsLength();
+        assert.equal(contributorsLength, 1);
+      });
+
+      it('balance of contributions should be equal to total token supply', async function () {
+        const preTotalSupply = await this.token.totalSupply();
+        preTotalSupply.should.be.bignumber.equal(0);
+        const preTokenBalance = await this.token.balanceOf(this.contributions.address);
+        preTokenBalance.should.be.bignumber.equal(0);
+
+        await this.crowdsale.sendTransaction({ value: value, from: investor }).should.be.fulfilled;
+
+        const postTokenBalance = await this.token.balanceOf(this.contributions.address);
+        const postTotalSupply = await this.token.totalSupply();
+
+        postTokenBalance.should.be.bignumber.equal(postTotalSupply);
+      });
+    });
+
     describe('low-level purchase', function () {
       beforeEach(async function () {
         await increaseTimeTo(this.openingTime);
@@ -104,6 +153,20 @@ export default function ([owner, investor, wallet, purchaser, thirdParty], rate)
 
         contributorsLength = await this.contributions.getContributorsLength();
         assert.equal(contributorsLength, 1);
+      });
+
+      it('balance of contributions should be equal to total token supply', async function () {
+        const preTotalSupply = await this.token.totalSupply();
+        preTotalSupply.should.be.bignumber.equal(0);
+        const preTokenBalance = await this.token.balanceOf(this.contributions.address);
+        preTokenBalance.should.be.bignumber.equal(0);
+
+        await this.crowdsale.buyTokens(investor, { value, from: purchaser }).should.be.fulfilled;
+
+        const postTokenBalance = await this.token.balanceOf(this.contributions.address);
+        const postTotalSupply = await this.token.totalSupply();
+
+        postTokenBalance.should.be.bignumber.equal(postTotalSupply);
       });
     });
 

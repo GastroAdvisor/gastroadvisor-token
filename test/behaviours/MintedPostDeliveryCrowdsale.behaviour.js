@@ -39,6 +39,14 @@ export default function ([owner, investor, wallet, purchaser], rate, value) {
       (postBalance.sub(preBalance)).should.be.bignumber.equal(expectedTokenAmount);
     });
 
+    it('weiRaised should increase', async function () {
+      await this.crowdsale.sendTransaction({ value: value.div(2), from: investor });
+      await this.crowdsale.sendTransaction({ value: value.div(2), from: investor });
+
+      const weiRaised = await this.crowdsale.weiRaised();
+      weiRaised.should.be.bignumber.equal(value);
+    });
+
     it('should forward funds to wallet', async function () {
       const pre = web3.eth.getBalance(wallet);
       await this.crowdsale.sendTransaction({ value, from: investor });
@@ -69,6 +77,14 @@ export default function ([owner, investor, wallet, purchaser], rate, value) {
       await this.crowdsale.buyTokens(investor, { value: value, from: purchaser });
       let postBalance = await this.token.balanceOf(this.contributions.address);
       (postBalance.sub(preBalance)).should.be.bignumber.equal(expectedTokenAmount);
+    });
+
+    it('weiRaised should increase', async function () {
+      await this.crowdsale.buyTokens(investor, { value: value.div(2), from: purchaser });
+      await this.crowdsale.buyTokens(investor, { value: value.div(2), from: purchaser });
+
+      const weiRaised = await this.crowdsale.weiRaised();
+      weiRaised.should.be.bignumber.equal(value);
     });
 
     it('should forward funds to wallet', async function () {

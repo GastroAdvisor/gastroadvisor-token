@@ -26,6 +26,14 @@ export default function ([investor, purchaser]) {
         await this.crowdsale.sendTransaction({ value: lessThanCap, from: investor }).should.be.fulfilled;
       });
 
+      it('soldTokens should increase', async function () {
+        await this.crowdsale.sendTransaction({ value: cap.div(2), from: investor }).should.be.fulfilled;
+        await this.crowdsale.sendTransaction({ value: cap.div(2), from: investor }).should.be.fulfilled;
+
+        const soldTokens = await this.crowdsale.soldTokens();
+        soldTokens.should.be.bignumber.equal(tokenCap);
+      });
+
       it('should reject payments outside cap', async function () {
         await this.crowdsale.sendTransaction({ value: cap, from: investor });
         await assertRevert(this.crowdsale.sendTransaction({ value: 1, from: investor }));
@@ -43,6 +51,14 @@ export default function ([investor, purchaser]) {
           from: purchaser,
         }).should.be.fulfilled;
         await this.crowdsale.buyTokens(investor, { value: lessThanCap, from: purchaser }).should.be.fulfilled;
+      });
+
+      it('soldTokens should increase', async function () {
+        await this.crowdsale.buyTokens(investor, { value: cap.div(2), from: purchaser });
+        await this.crowdsale.buyTokens(investor, { value: cap.div(2), from: purchaser });
+
+        const soldTokens = await this.crowdsale.soldTokens();
+        soldTokens.should.be.bignumber.equal(tokenCap);
       });
 
       it('should reject payments outside cap', async function () {
