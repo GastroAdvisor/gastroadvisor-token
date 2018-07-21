@@ -21,9 +21,8 @@ const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 contract('ForkICO', function ([owner, investor, wallet, purchaser, thirdParty]) {
   const rate = new BigNumber(10);
-  const tokenCap = new BigNumber(100);
   const tokenDecimals = 18;
-  const cap = tokenCap.mul(Math.pow(10, tokenDecimals)).div(rate);
+  const tokenCap = (new BigNumber(100)).mul(Math.pow(10, tokenDecimals));
 
   before(async function () {
     // Advance to the next block to correctly read time in the solidity "now" function interpreted by testrpc
@@ -42,7 +41,7 @@ contract('ForkICO', function ([owner, investor, wallet, purchaser, thirdParty]) 
       this.closingTime,
       rate,
       wallet,
-      cap,
+      tokenCap,
       this.token.address,
       this.contributions.address
     );
@@ -62,10 +61,9 @@ contract('ForkICO', function ([owner, investor, wallet, purchaser, thirdParty]) 
         isMinter.should.equal(true);
       });
 
-      it('cap should be right set by token cap', async function () {
-        const expectedCap = tokenCap.mul(Math.pow(10, tokenDecimals)).div(rate);
-        const cap = await this.crowdsale.cap();
-        cap.should.be.bignumber.equal(expectedCap);
+      it('tokenCap should be right set', async function () {
+        const currentTokenCap = await this.crowdsale.tokenCap();
+        currentTokenCap.should.be.bignumber.equal(tokenCap);
       });
 
       it('should fail with zero rate', async function () {
@@ -75,7 +73,7 @@ contract('ForkICO', function ([owner, investor, wallet, purchaser, thirdParty]) 
             this.closingTime,
             0,
             wallet,
-            cap,
+            tokenCap,
             this.token.address,
             this.contributions.address
           )
@@ -89,7 +87,7 @@ contract('ForkICO', function ([owner, investor, wallet, purchaser, thirdParty]) 
             this.closingTime,
             rate,
             ZERO_ADDRESS,
-            cap,
+            tokenCap,
             this.token.address,
             this.contributions.address
           )
@@ -103,7 +101,7 @@ contract('ForkICO', function ([owner, investor, wallet, purchaser, thirdParty]) 
             this.closingTime,
             rate,
             wallet,
-            cap,
+            tokenCap,
             ZERO_ADDRESS,
             this.contributions.address
           )
@@ -117,7 +115,7 @@ contract('ForkICO', function ([owner, investor, wallet, purchaser, thirdParty]) 
             this.closingTime,
             rate,
             wallet,
-            cap,
+            tokenCap,
             this.token.address,
             this.contributions.address
           )
@@ -131,7 +129,7 @@ contract('ForkICO', function ([owner, investor, wallet, purchaser, thirdParty]) 
             this.openingTime,
             rate,
             wallet,
-            cap,
+            tokenCap,
             this.token.address,
             this.contributions.address
           )
@@ -145,14 +143,14 @@ contract('ForkICO', function ([owner, investor, wallet, purchaser, thirdParty]) 
             this.closingTime,
             rate,
             wallet,
-            cap,
+            tokenCap,
             this.token.address,
             ZERO_ADDRESS
           )
         );
       });
 
-      it('should fail with zero cap', async function () {
+      it('should fail with zero tokenCap', async function () {
         await assertRevert(
           ForkICO.new(
             this.openingTime,

@@ -1,13 +1,13 @@
 pragma solidity ^0.4.24;
 
 import "openzeppelin-solidity/contracts/crowdsale/validation/TimedCrowdsale.sol";
-import "openzeppelin-solidity/contracts/crowdsale/validation/CappedCrowdsale.sol";
 import "openzeppelin-solidity/contracts/crowdsale/emission/MintedCrowdsale.sol";
+import "./TokenCappedCrowdsale.sol";
 
 import "../Contributions.sol";
 
 
-contract DefaultCrowdsale is TimedCrowdsale, CappedCrowdsale, MintedCrowdsale, Ownable {
+contract DefaultCrowdsale is TimedCrowdsale, TokenCappedCrowdsale, MintedCrowdsale, Ownable {
 
   Contributions public contributions;
 
@@ -16,13 +16,13 @@ contract DefaultCrowdsale is TimedCrowdsale, CappedCrowdsale, MintedCrowdsale, O
     uint256 _endTime,
     uint256 _rate,
     address _wallet,
-    uint256 _cap,
+    uint256 _tokenCap,
     address _token,
     address _contributions
   )
   Crowdsale(_rate, _wallet, ERC20(_token))
   TimedCrowdsale(_startTime, _endTime)
-  CappedCrowdsale(_cap)
+  TokenCappedCrowdsale(_tokenCap)
   public
   {
     require(_contributions != address(0));
@@ -37,7 +37,7 @@ contract DefaultCrowdsale is TimedCrowdsale, CappedCrowdsale, MintedCrowdsale, O
 
   // false if the ico is not started, false if the ico is started and running, true if the ico is completed
   function ended() public view returns(bool) {
-    return hasClosed() || capReached();
+    return hasClosed() || tokenCapReached();
   }
 
   // it's a safe function allowing to recover any ERC20 sent into the contract for error

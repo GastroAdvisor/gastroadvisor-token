@@ -8,11 +8,14 @@ require('chai')
   .should();
 
 export default function ([investor, purchaser]) {
+  let tokenCap;
   let cap;
   let lessThanCap;
 
   beforeEach(async function () {
-    cap = await this.crowdsale.cap();
+    const currentRate = await this.crowdsale.rate();
+    tokenCap = await this.crowdsale.tokenCap();
+    cap = tokenCap.div(currentRate);
     lessThanCap = cap.minus(1);
   });
 
@@ -55,23 +58,23 @@ export default function ([investor, purchaser]) {
 
   describe('ending', function () {
     it('should not reach cap if sent under cap', async function () {
-      let capReached = await this.crowdsale.capReached();
-      capReached.should.equal(false);
+      let tokenCapReached = await this.crowdsale.tokenCapReached();
+      tokenCapReached.should.equal(false);
       await this.crowdsale.sendTransaction({ value: lessThanCap, from: investor });
-      capReached = await this.crowdsale.capReached();
-      capReached.should.equal(false);
+      tokenCapReached = await this.crowdsale.tokenCapReached();
+      tokenCapReached.should.equal(false);
     });
 
     it('should not reach cap if sent just under cap', async function () {
       await this.crowdsale.sendTransaction({ value: cap.minus(1), from: investor });
-      let capReached = await this.crowdsale.capReached();
-      capReached.should.equal(false);
+      let tokenCapReached = await this.crowdsale.tokenCapReached();
+      tokenCapReached.should.equal(false);
     });
 
     it('should reach cap if cap sent', async function () {
       await this.crowdsale.sendTransaction({ value: cap, from: investor });
-      let capReached = await this.crowdsale.capReached();
-      capReached.should.equal(true);
+      let tokenCapReached = await this.crowdsale.tokenCapReached();
+      tokenCapReached.should.equal(true);
     });
   });
 }

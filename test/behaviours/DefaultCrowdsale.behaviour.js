@@ -3,7 +3,7 @@ import { increaseTimeTo } from '../helpers/increaseTime';
 import assertRevert from '../helpers/assertRevert';
 
 import shouldBehaveLikeTimedCrowdsale from './TimedCrowdsale.behaviour';
-import shouldBehaveLikeCappedCrowdsale from './CappedCrowdsale.behaviour';
+import shouldBehaveLikeTokenCappedCrowdsale from './TokenCappedCrowdsale.behaviour';
 import shouldBehaveLikeMintedPostDeliveryCrowdsale from './MintedPostDeliveryCrowdsale.behaviour';
 
 const BigNumber = web3.BigNumber;
@@ -22,11 +22,11 @@ export default function ([owner, investor, wallet, purchaser, thirdParty], rate)
     shouldBehaveLikeTimedCrowdsale([owner, investor, wallet, purchaser], rate, value);
   });
 
-  context('like a CappedCrowdsale', function () {
+  context('like a TokenCappedCrowdsale', function () {
     beforeEach(async function () {
       await increaseTimeTo(this.openingTime);
     });
-    shouldBehaveLikeCappedCrowdsale([investor, purchaser]);
+    shouldBehaveLikeTokenCappedCrowdsale([investor, purchaser]);
   });
 
   context('like a Minted, PostDelivery Crowdsale', function () {
@@ -119,8 +119,8 @@ export default function ([owner, investor, wallet, purchaser, thirdParty], rate)
           assert.equal(toTest, false);
         });
 
-        it('capReached should be false', async function () {
-          const toTest = await this.crowdsale.capReached();
+        it('tokenCapReached should be false', async function () {
+          const toTest = await this.crowdsale.tokenCapReached();
           assert.equal(toTest, false);
         });
       });
@@ -135,21 +135,23 @@ export default function ([owner, investor, wallet, purchaser, thirdParty], rate)
           assert.equal(toTest, true);
         });
 
-        describe('if cap not reached', function () {
+        describe('if tokenCap not reached', function () {
           it('ended should be false', async function () {
             const toTest = await this.crowdsale.ended();
             assert.equal(toTest, false);
           });
 
-          it('capReached should be false', async function () {
-            const toTest = await this.crowdsale.capReached();
+          it('tokenCapReached should be false', async function () {
+            const toTest = await this.crowdsale.tokenCapReached();
             assert.equal(toTest, false);
           });
         });
 
-        describe('if cap reached', function () {
+        describe('if tokenCap reached', function () {
           beforeEach(async function () {
-            const cap = await this.crowdsale.cap();
+            const currentRate = await this.crowdsale.rate();
+            const tokenCap = await this.crowdsale.tokenCap();
+            const cap = tokenCap.div(currentRate);
             await this.crowdsale.send(cap);
           });
 
@@ -158,8 +160,8 @@ export default function ([owner, investor, wallet, purchaser, thirdParty], rate)
             assert.equal(toTest, true);
           });
 
-          it('capReached should be true', async function () {
-            const toTest = await this.crowdsale.capReached();
+          it('tokenCapReached should be true', async function () {
+            const toTest = await this.crowdsale.tokenCapReached();
             assert.equal(toTest, true);
           });
         });
