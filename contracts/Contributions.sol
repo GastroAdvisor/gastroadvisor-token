@@ -16,14 +16,16 @@ contract Contributions is RBAC, Ownable {
   }
 
   mapping(address => uint256) public tokenBalances;
+  mapping(address => uint256) public ethContributions;
   address[] public addresses;
 
   constructor() public {}
 
-  function addBalance(address _address, uint256 _tokenAmount) onlyMinter public {
-    if (tokenBalances[_address] == 0) {
+  function addBalance(address _address, uint256 _weiAmount, uint256 _tokenAmount) onlyMinter public {
+    if (ethContributions[_address] == 0) {
       addresses.push(_address);
     }
+    ethContributions[_address] = ethContributions[_address].add(_weiAmount);
     tokenBalances[_address] = tokenBalances[_address].add(_tokenAmount);
   }
 

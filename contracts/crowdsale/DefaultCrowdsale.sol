@@ -45,6 +45,21 @@ contract DefaultCrowdsale is TimedCrowdsale, CappedCrowdsale, MintedCrowdsale, O
   }
 
   /**
+   * @dev Override for extensions that require an internal state to check for validity (current user contributions, etc.)
+   * @param _beneficiary Address receiving the tokens
+   * @param _weiAmount Value in wei involved in the purchase
+   */
+  function _updatePurchasingState(
+    address _beneficiary,
+    uint256 _weiAmount
+  )
+  internal
+  {
+    super._updatePurchasingState(_beneficiary, _weiAmount);
+    contributions.addBalance(_beneficiary, _weiAmount, _getTokenAmount(_weiAmount));
+  }
+
+  /**
    * @dev Extend parent behavior to add contributions log
    * @dev Executed when a purchase has been validated and is ready to be executed. Not necessarily emits/sends tokens.
    * @param _beneficiary Address receiving the tokens
@@ -52,6 +67,5 @@ contract DefaultCrowdsale is TimedCrowdsale, CappedCrowdsale, MintedCrowdsale, O
    */
   function _processPurchase(address _beneficiary, uint256 _tokenAmount) internal {
     super._deliverTokens(address(contributions), _tokenAmount);
-    contributions.addBalance(_beneficiary, _tokenAmount);
   }
 }
