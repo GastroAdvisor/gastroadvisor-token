@@ -40,12 +40,13 @@ contract DefaultCrowdsale is TimedCrowdsale, CappedCrowdsale, MintedCrowdsale, O
     return hasClosed() || capReached();
   }
 
+  // it's a safe function allowing to recover any ERC20 sent into the contract for error
   function transferAnyERC20Token(address _tokenAddress, uint256 _tokens) onlyOwner public returns (bool success) {
     return ERC20Basic(_tokenAddress).transfer(owner, _tokens);
   }
 
   /**
-   * @dev Override for extensions that require an internal state to check for validity (current user contributions, etc.)
+   * @dev Update the contributions contract states
    * @param _beneficiary Address receiving the tokens
    * @param _weiAmount Value in wei involved in the purchase
    */
@@ -61,8 +62,9 @@ contract DefaultCrowdsale is TimedCrowdsale, CappedCrowdsale, MintedCrowdsale, O
 
   /**
    * @dev Extend parent behavior to add contributions log
-   * @dev Executed when a purchase has been validated and is ready to be executed. Not necessarily emits/sends tokens.
-   * @param _beneficiary Address receiving the tokens
+   * @dev Executed when a purchase has been validated and is ready to be executed.
+   * @dev Deliver tokens to the contributions contract.
+   * @param _beneficiary Unused
    * @param _tokenAmount Number of tokens to be purchased
    */
   function _processPurchase(address _beneficiary, uint256 _tokenAmount) internal {

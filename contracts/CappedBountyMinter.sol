@@ -47,6 +47,7 @@ contract CappedBountyMinter is Ownable {
     return cap.sub(totalGivenBountyTokens);
   }
 
+  // it's a safe function allowing to recover any ERC20 sent into the contract for error
   function transferAnyERC20Token(address _tokenAddress, uint256 _tokens) onlyOwner public returns (bool success) {
     return ERC20Basic(_tokenAddress).transfer(owner, _tokens);
   }
