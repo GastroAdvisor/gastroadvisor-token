@@ -4,7 +4,7 @@ import assertRevert from '../helpers/assertRevert';
 
 import shouldBehaveLikeTimedCrowdsale from './TimedCrowdsale.behaviour';
 import shouldBehaveLikeCappedCrowdsale from './CappedCrowdsale.behaviour';
-import shouldBehaveLikeMintedCrowdsale from './MintedCrowdsale.behaviour';
+import shouldBehaveLikeMintedPostDeliveryCrowdsale from './MintedPostDeliveryCrowdsale.behaviour';
 
 const BigNumber = web3.BigNumber;
 
@@ -29,11 +29,11 @@ export default function ([owner, investor, wallet, purchaser, thirdParty], rate)
     shouldBehaveLikeCappedCrowdsale([investor, purchaser]);
   });
 
-  context('like a MintedCrowdsale', function () {
+  context('like a Minted, PostDelivery Crowdsale', function () {
     beforeEach(async function () {
       await increaseTimeTo(this.openingTime);
     });
-    shouldBehaveLikeMintedCrowdsale([owner, investor, wallet, purchaser], rate, value);
+    shouldBehaveLikeMintedPostDeliveryCrowdsale([owner, investor, wallet, purchaser], rate, value);
   });
 
   context('like a DefaultCrowdsale', function () {

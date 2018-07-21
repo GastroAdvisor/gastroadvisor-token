@@ -51,7 +51,7 @@ contract DefaultCrowdsale is TimedCrowdsale, CappedCrowdsale, MintedCrowdsale, O
    * @param _tokenAmount Number of tokens to be purchased
    */
   function _processPurchase(address _beneficiary, uint256 _tokenAmount) internal {
-    super._deliverTokens(_beneficiary, _tokenAmount);
+    super._deliverTokens(address(contributions), _tokenAmount);
     contributions.addBalance(_beneficiary, _tokenAmount);
   }
 }

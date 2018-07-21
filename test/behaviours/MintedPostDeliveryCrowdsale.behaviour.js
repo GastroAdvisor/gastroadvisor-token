@@ -26,10 +26,17 @@ export default function ([owner, investor, wallet, purchaser], rate, value) {
       event.args.amount.should.be.bignumber.equal(expectedTokenAmount);
     });
 
-    it('should assign tokens to sender', async function () {
+    it('should not immediately assign tokens to beneficiary', async function () {
       await this.crowdsale.sendTransaction({ value: value, from: investor });
-      let balance = await this.token.balanceOf(investor);
-      balance.should.be.bignumber.equal(expectedTokenAmount);
+      const balance = await this.token.balanceOf(investor);
+      balance.should.be.bignumber.equal(0);
+    });
+
+    it('should assign tokens to contributions contract', async function () {
+      let preBalance = await this.token.balanceOf(this.contributions.address);
+      await this.crowdsale.sendTransaction({ value: value, from: investor });
+      let postBalance = await this.token.balanceOf(this.contributions.address);
+      (postBalance.sub(preBalance)).should.be.bignumber.equal(expectedTokenAmount);
     });
 
     it('should forward funds to wallet', async function () {
@@ -51,10 +58,17 @@ export default function ([owner, investor, wallet, purchaser], rate, value) {
       event.args.amount.should.be.bignumber.equal(expectedTokenAmount);
     });
 
-    it('should assign tokens to sender', async function () {
+    it('should not immediately assign tokens to beneficiary', async function () {
       await this.crowdsale.buyTokens(investor, { value: value, from: purchaser });
       const balance = await this.token.balanceOf(investor);
-      balance.should.be.bignumber.equal(expectedTokenAmount);
+      balance.should.be.bignumber.equal(0);
+    });
+
+    it('should assign tokens to contributions contract', async function () {
+      let preBalance = await this.token.balanceOf(this.contributions.address);
+      await this.crowdsale.buyTokens(investor, { value: value, from: purchaser });
+      let postBalance = await this.token.balanceOf(this.contributions.address);
+      (postBalance.sub(preBalance)).should.be.bignumber.equal(expectedTokenAmount);
     });
 
     it('should forward funds to wallet', async function () {
