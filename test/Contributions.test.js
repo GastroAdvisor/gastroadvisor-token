@@ -1,6 +1,6 @@
 import assertRevert from './helpers/assertRevert';
 import expectEvent from './helpers/expectEvent';
-import ether from "./helpers/ether";
+import ether from './helpers/ether';
 
 const BigNumber = web3.BigNumber;
 
@@ -87,7 +87,6 @@ contract('Contributions', function ([_, owner, minter, futureMinter, thirdParty,
       ethBalances[owner] = await this.contributions.ethContributions(owner);
       ethBalances[thirdParty] = await this.contributions.ethContributions(thirdParty);
       ethBalances[anotherThirdParty] = await this.contributions.ethContributions(anotherThirdParty);
-
 
       let contributorsLength = (await this.contributions.getContributorsLength()).valueOf();
 
