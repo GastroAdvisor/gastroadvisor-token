@@ -7,7 +7,7 @@ import "./TokenCappedCrowdsale.sol";
 import "../Contributions.sol";
 
 
-contract DefaultCrowdsale is TimedCrowdsale, TokenCappedCrowdsale, MintedCrowdsale, Ownable {
+contract DefaultCrowdsale is TimedCrowdsale, MintedCrowdsale, TokenCappedCrowdsale, Ownable {
 
   Contributions public contributions;
 
@@ -68,6 +68,6 @@ contract DefaultCrowdsale is TimedCrowdsale, TokenCappedCrowdsale, MintedCrowdsa
    * @param _tokenAmount Number of tokens to be purchased
    */
   function _processPurchase(address _beneficiary, uint256 _tokenAmount) internal {
-    super._deliverTokens(address(contributions), _tokenAmount);
+    super._processPurchase(address(contributions), _tokenAmount);
   }
 }
