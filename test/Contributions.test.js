@@ -1,6 +1,6 @@
-import assertRevert from './helpers/assertRevert';
-import expectEvent from './helpers/expectEvent';
-import ether from './helpers/ether';
+const expectEvent = require('./helpers/expectEvent');
+const { ether } = require('./helpers/ether');
+const { assertRevert } = require('./helpers/assertRevert');
 
 const BigNumber = web3.BigNumber;
 
@@ -78,22 +78,22 @@ contract('Contributions', function ([_, owner, minter, futureMinter, thirdParty,
       await this.contributions.addBalance(anotherThirdParty, ethToAdd, tokenToAdd, { from: minter });
       await this.contributions.addBalance(anotherThirdParty, ethToAdd, tokenToAdd, { from: minter });
 
-      let tokenBalances = [];
+      const tokenBalances = [];
       tokenBalances[owner] = await this.contributions.tokenBalances(owner);
       tokenBalances[thirdParty] = await this.contributions.tokenBalances(thirdParty);
       tokenBalances[anotherThirdParty] = await this.contributions.tokenBalances(anotherThirdParty);
 
-      let ethBalances = [];
+      const ethBalances = [];
       ethBalances[owner] = await this.contributions.ethContributions(owner);
       ethBalances[thirdParty] = await this.contributions.ethContributions(thirdParty);
       ethBalances[anotherThirdParty] = await this.contributions.ethContributions(anotherThirdParty);
 
-      let contributorsLength = (await this.contributions.getContributorsLength()).valueOf();
+      const contributorsLength = (await this.contributions.getContributorsLength()).valueOf();
 
       for (let i = 0; i < contributorsLength; i++) {
-        let address = await this.contributions.addresses(i);
-        let tokenBalance = await this.contributions.tokenBalances(address);
-        let ethBalance = await this.contributions.ethContributions(address);
+        const address = await this.contributions.addresses(i);
+        const tokenBalance = await this.contributions.tokenBalances(address);
+        const ethBalance = await this.contributions.ethContributions(address);
 
         tokenBalance.should.be.bignumber.equal(tokenBalances[address]);
         ethBalance.should.be.bignumber.equal(ethBalances[address]);

@@ -1,4 +1,4 @@
-import assertRevert from './helpers/assertRevert';
+const { assertRevert } = require('./helpers/assertRevert');
 
 const BigNumber = web3.BigNumber;
 
@@ -66,33 +66,33 @@ contract('CappedBountyMinter', function (
   context('sending bounty tokens', function () {
     describe('if bounty owner is calling', function () {
       it('should transfer tokens for given addresses', async function () {
-        for (let arrayIndex in addresses) {
-          let receiverBalance = await this.token.balanceOf(addresses[arrayIndex]);
+        for (const arrayIndex in addresses) {
+          const receiverBalance = await this.token.balanceOf(addresses[arrayIndex]);
           receiverBalance.should.be.bignumber.equal(0);
         }
 
         await this.bounty.multiSend(addresses, amounts, { from: bountyOwner });
 
-        for (let arrayIndex in addresses) {
-          let receiverBalance = await this.token.balanceOf(addresses[arrayIndex]);
+        for (const arrayIndex in addresses) {
+          const receiverBalance = await this.token.balanceOf(addresses[arrayIndex]);
 
-          let expectedTokens = amounts[arrayIndex].mul(Math.pow(10, this.decimals));
+          const expectedTokens = amounts[arrayIndex].mul(Math.pow(10, this.decimals));
           receiverBalance.should.be.bignumber.equal(expectedTokens);
         }
       });
 
       it('should increase givenBountyTokens', async function () {
-        for (let arrayIndex in addresses) {
-          let receiverBalance = await this.token.balanceOf(addresses[arrayIndex]);
+        for (const arrayIndex in addresses) {
+          const receiverBalance = await this.token.balanceOf(addresses[arrayIndex]);
           receiverBalance.should.be.bignumber.equal(0);
         }
 
         await this.bounty.multiSend(addresses, amounts, { from: bountyOwner });
 
-        for (let arrayIndex in addresses) {
-          let givenBountyTokens = await this.bounty.givenBountyTokens(addresses[arrayIndex]);
+        for (const arrayIndex in addresses) {
+          const givenBountyTokens = await this.bounty.givenBountyTokens(addresses[arrayIndex]);
 
-          let expectedTokens = amounts[arrayIndex].mul(Math.pow(10, this.decimals));
+          const expectedTokens = amounts[arrayIndex].mul(Math.pow(10, this.decimals));
           givenBountyTokens.should.be.bignumber.equal(expectedTokens);
         }
       });
@@ -102,7 +102,7 @@ contract('CappedBountyMinter', function (
 
         await this.bounty.multiSend(addresses, amounts, { from: bountyOwner });
 
-        for (let arrayIndex in amounts) {
+        for (const arrayIndex in amounts) {
           totalGivenTokens = totalGivenTokens.plus(amounts[arrayIndex].mul(Math.pow(10, this.decimals)));
         }
         const totalGivenBountyTokens = await this.bounty.totalGivenBountyTokens();
@@ -114,7 +114,7 @@ contract('CappedBountyMinter', function (
 
         await this.bounty.multiSend(addresses, amounts, { from: bountyOwner });
 
-        for (let arrayIndex in amounts) {
+        for (const arrayIndex in amounts) {
           totalGivenTokens = totalGivenTokens.plus(amounts[arrayIndex].mul(Math.pow(10, this.decimals)));
         }
         const remainingTokens = await this.bounty.remainingTokens();
@@ -125,35 +125,35 @@ contract('CappedBountyMinter', function (
 
       describe('calling twice', function () {
         it('should transfer tokens for given addresses', async function () {
-          for (let arrayIndex in addresses) {
-            let receiverBalance = await this.token.balanceOf(addresses[arrayIndex]);
+          for (const arrayIndex in addresses) {
+            const receiverBalance = await this.token.balanceOf(addresses[arrayIndex]);
             receiverBalance.should.be.bignumber.equal(0);
           }
 
           await this.bounty.multiSend(addresses, amounts, { from: bountyOwner });
           await this.bounty.multiSend(addresses, amounts, { from: bountyOwner });
 
-          for (let arrayIndex in addresses) {
-            let receiverBalance = await this.token.balanceOf(addresses[arrayIndex]);
+          for (const arrayIndex in addresses) {
+            const receiverBalance = await this.token.balanceOf(addresses[arrayIndex]);
 
-            let expectedTokens = amounts[arrayIndex].mul(Math.pow(10, this.decimals));
+            const expectedTokens = amounts[arrayIndex].mul(Math.pow(10, this.decimals));
             receiverBalance.should.be.bignumber.equal(expectedTokens.mul(2));
           }
         });
 
         it('should increase givenBountyTokens', async function () {
-          for (let arrayIndex in addresses) {
-            let receiverBalance = await this.token.balanceOf(addresses[arrayIndex]);
+          for (const arrayIndex in addresses) {
+            const receiverBalance = await this.token.balanceOf(addresses[arrayIndex]);
             receiverBalance.should.be.bignumber.equal(0);
           }
 
           await this.bounty.multiSend(addresses, amounts, { from: bountyOwner });
           await this.bounty.multiSend(addresses, amounts, { from: bountyOwner });
 
-          for (let arrayIndex in addresses) {
-            let givenBountyTokens = await this.bounty.givenBountyTokens(addresses[arrayIndex]);
+          for (const arrayIndex in addresses) {
+            const givenBountyTokens = await this.bounty.givenBountyTokens(addresses[arrayIndex]);
 
-            let expectedTokens = amounts[arrayIndex].mul(Math.pow(10, this.decimals));
+            const expectedTokens = amounts[arrayIndex].mul(Math.pow(10, this.decimals));
             givenBountyTokens.should.be.bignumber.equal(expectedTokens.mul(2));
           }
         });
@@ -164,7 +164,7 @@ contract('CappedBountyMinter', function (
           await this.bounty.multiSend(addresses, amounts, { from: bountyOwner });
           await this.bounty.multiSend(addresses, amounts, { from: bountyOwner });
 
-          for (let arrayIndex in amounts) {
+          for (const arrayIndex in amounts) {
             totalGivenTokens = totalGivenTokens.plus(amounts[arrayIndex].mul(Math.pow(10, this.decimals)));
           }
           const totalGivenBountyTokens = await this.bounty.totalGivenBountyTokens();
@@ -226,7 +226,7 @@ contract('CappedBountyMinter', function (
   context('safe functions', function () {
     describe('transferAnyERC20Token', function () {
       let anotherERC20;
-      let tokenAmount = new BigNumber(1000);
+      const tokenAmount = new BigNumber(1000);
 
       beforeEach(async function () {
         anotherERC20 = await MintableToken.new({ from: tokenOwner });

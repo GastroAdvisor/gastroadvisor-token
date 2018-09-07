@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
-import "./GastroAdvisorToken.sol";
+import "./token/GastroAdvisorToken.sol";
 
 
 contract CappedBountyMinter is Ownable {
@@ -48,7 +48,14 @@ contract CappedBountyMinter is Ownable {
   }
 
   // it's a safe function allowing to recover any ERC20 sent into the contract for error
-  function transferAnyERC20Token(address _tokenAddress, uint256 _tokens) onlyOwner public returns (bool success) {
+  function transferAnyERC20Token(
+    address _tokenAddress,
+    uint256 _tokens
+  )
+  public
+  onlyOwner
+  returns (bool success)
+  {
     return ERC20Basic(_tokenAddress).transfer(owner, _tokens);
   }
 }

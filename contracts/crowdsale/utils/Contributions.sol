@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
-import "openzeppelin-solidity/contracts/ownership/rbac/RBAC.sol";
+import "openzeppelin-solidity/contracts/access/rbac/RBAC.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 
@@ -21,7 +21,14 @@ contract Contributions is RBAC, Ownable {
 
   constructor() public {}
 
-  function addBalance(address _address, uint256 _weiAmount, uint256 _tokenAmount) onlyMinter public {
+  function addBalance(
+    address _address,
+    uint256 _weiAmount,
+    uint256 _tokenAmount
+  )
+  public
+  onlyMinter
+  {
     if (ethContributions[_address] == 0) {
       addresses.push(_address);
     }
@@ -33,7 +40,7 @@ contract Contributions is RBAC, Ownable {
    * @dev add a minter role to an address
    * @param minter address
    */
-  function addMinter(address minter) onlyOwner public {
+  function addMinter(address minter) public onlyOwner {
     addRole(minter, ROLE_MINTER);
   }
 
@@ -41,11 +48,11 @@ contract Contributions is RBAC, Ownable {
    * @dev remove a minter role from an address
    * @param minter address
    */
-  function removeMinter(address minter) onlyOwner public {
+  function removeMinter(address minter) public onlyOwner {
     removeRole(minter, ROLE_MINTER);
   }
 
-  function getContributorsLength() view public returns (uint) {
+  function getContributorsLength() public view returns (uint) {
     return addresses.length;
   }
 }

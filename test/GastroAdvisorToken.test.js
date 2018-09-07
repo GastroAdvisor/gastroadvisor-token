@@ -1,11 +1,10 @@
-import assertRevert from './helpers/assertRevert';
+const { assertRevert } = require('./helpers/assertRevert');
 
-import shouldBehaveLikeDetailedERC20Token from './behaviours/DetailedERC20.behaviour';
-import shouldBehaveLikeMintableToken from './behaviours/MintableToken.behaviour';
-import shouldBehaveLikeRBACMintableToken from './behaviours/RBACMintableToken.behaviour';
-import shouldBehaveLikeBurnableToken from './behaviours/BurnableToken.behaviour';
-import shouldBehaveLikeStandardToken from './behaviours/StandardToken.behaviour';
-import shouldBehaveERC827Token from './behaviours/ERC827Token.behaviour';
+const { shouldBehaveLikeDetailedERC20Token } = require('./behaviours/DetailedERC20.behaviour');
+const { shouldBehaveLikeMintableToken } = require('./behaviours/MintableToken.behaviour');
+const { shouldBehaveLikeRBACMintableToken } = require('./behaviours/RBACMintableToken.behaviour');
+const { shouldBehaveLikeBurnableToken } = require('./behaviours/BurnableToken.behaviour');
+const { shouldBehaveLikeStandardToken } = require('./behaviours/StandardToken.behaviour');
 
 const BigNumber = web3.BigNumber;
 
@@ -14,17 +13,20 @@ require('chai')
   .use(require('chai-bignumber')(BigNumber))
   .should();
 
-const Message = artifacts.require('MessageHelper');
 const GastroAdvisorToken = artifacts.require('GastroAdvisorToken');
 const MintableToken = artifacts.require('MintableToken');
 
 contract('GastroAdvisorToken', function ([owner, anotherAccount, minter, recipient, thirdParty]) {
+  const _name = 'GastroAdvisorToken';
+  const _symbol = 'FORK';
+  const _decimals = 18;
+
   beforeEach(async function () {
     this.token = await GastroAdvisorToken.new({ from: owner });
   });
 
   context('like a DetailedERC20 token', function () {
-    shouldBehaveLikeDetailedERC20Token();
+    shouldBehaveLikeDetailedERC20Token(_name, _symbol, _decimals);
   });
 
   context('like a MintableToken', function () {
@@ -62,17 +64,6 @@ contract('GastroAdvisorToken', function ([owner, anotherAccount, minter, recipie
     shouldBehaveLikeStandardToken([owner, anotherAccount, recipient], initialBalance);
   });
 
-  context('like a ERC827Token', function () {
-    const initialBalance = 100;
-
-    beforeEach(async function () {
-      await this.token.addMinter(minter, { from: owner });
-      await this.token.mint(owner, initialBalance, { from: minter });
-      await this.token.finishMinting({ from: owner });
-    });
-    shouldBehaveERC827Token([owner, anotherAccount, minter, recipient]);
-  });
-
   context('like a GastroAdvisor token', function () {
     const initialBalance = 1000;
 
@@ -89,75 +80,12 @@ contract('GastroAdvisorToken', function ([owner, anotherAccount, minter, recipie
       await this.token.approve(anotherAccount, initialBalance, { from: owner });
       await assertRevert(this.token.transferFrom(owner, recipient, initialBalance, { from: anotherAccount }));
     });
-
-    it('should fail payment through transfer before finish minting', async function () {
-      const message = await Message.new();
-
-      const extraData = message.contract.buyMessage.getData(
-        web3.toHex(123456), 666, 'Transfer Done'
-      );
-
-      await assertRevert(
-        this.token.transferAndCall(
-          message.contract.address, initialBalance, extraData, { from: owner, value: 1000 }
-        )
-      );
-    });
-
-    it('should fail payment through transferFrom before finish minting', async function () {
-      const message = await Message.new();
-
-      const extraData = message.contract.buyMessage.getData(
-        web3.toHex(123456), 666, 'Transfer Done'
-      );
-
-      await this.token.approve(anotherAccount, initialBalance, { from: owner });
-
-      new BigNumber(initialBalance).should.be.bignumber.equal(
-        await this.token.allowance(owner, anotherAccount)
-      );
-
-      await assertRevert(this.token.transferFromAndCall(
-        owner, message.contract.address, 100, extraData, { from: anotherAccount, value: 1000 }
-      )
-      );
-    });
-
-    it('should fail transfer (with data) before finish minting', async function () {
-      const message = await Message.new();
-
-      const extraData = message.contract.showMessage.getData(
-        web3.toHex(123456), 666, 'Transfer Done'
-      );
-
-      await assertRevert(this.token.transferAndCall(message.contract.address, initialBalance, extraData));
-    });
-
-    it('should fail transferFrom (with data) before finish minting', async function () {
-      const message = await Message.new();
-
-      const extraData = message.contract.showMessage.getData(
-        web3.toHex(123456), 666, 'Transfer Done'
-      );
-
-      await this.token.approve(anotherAccount, initialBalance, { from: owner });
-
-      new BigNumber(initialBalance).should.be.bignumber.equal(
-        await this.token.allowance(owner, anotherAccount)
-      );
-
-      await assertRevert(
-        this.token.transferFromAndCall(owner, message.contract.address, initialBalance, extraData, {
-          from: anotherAccount,
-        })
-      );
-    });
   });
 
   context('safe functions', function () {
     describe('transferAnyERC20Token', function () {
       let anotherERC20;
-      let tokenAmount = new BigNumber(1000);
+      const tokenAmount = new BigNumber(1000);
 
       beforeEach(async function () {
         anotherERC20 = await MintableToken.new({ from: owner });

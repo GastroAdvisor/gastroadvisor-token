@@ -1,13 +1,13 @@
 pragma solidity ^0.4.24;
 
-import "openzeppelin-solidity/contracts/crowdsale/validation/TimedCrowdsale.sol";
-import "openzeppelin-solidity/contracts/crowdsale/emission/MintedCrowdsale.sol";
+import "openzeppelin-solidity/contracts/crowdsale/validation/TimedCrowdsale.sol"; // solium-disable-line max-len
+import "openzeppelin-solidity/contracts/crowdsale/emission/MintedCrowdsale.sol"; // solium-disable-line max-len
 import "./TokenCappedCrowdsale.sol";
 
-import "../Contributions.sol";
+import "../utils/Contributions.sol";
 
 
-contract DefaultCrowdsale is TimedCrowdsale, MintedCrowdsale, TokenCappedCrowdsale, Ownable {
+contract DefaultCrowdsale is TimedCrowdsale, MintedCrowdsale, TokenCappedCrowdsale, Ownable { // solium-disable-line max-len
 
   Contributions public contributions;
 
@@ -41,7 +41,14 @@ contract DefaultCrowdsale is TimedCrowdsale, MintedCrowdsale, TokenCappedCrowdsa
   }
 
   // it's a safe function allowing to recover any ERC20 sent into the contract for error
-  function transferAnyERC20Token(address _tokenAddress, uint256 _tokens) onlyOwner public returns (bool success) {
+  function transferAnyERC20Token(
+    address _tokenAddress,
+    uint256 _tokens
+  )
+  public
+  onlyOwner
+  returns (bool success)
+  {
     return ERC20Basic(_tokenAddress).transfer(owner, _tokens);
   }
 
@@ -57,17 +64,10 @@ contract DefaultCrowdsale is TimedCrowdsale, MintedCrowdsale, TokenCappedCrowdsa
   internal
   {
     super._updatePurchasingState(_beneficiary, _weiAmount);
-    contributions.addBalance(_beneficiary, _weiAmount, _getTokenAmount(_weiAmount));
-  }
-
-  /**
-   * @dev Extend parent behavior to add contributions log
-   * @dev Executed when a purchase has been validated and is ready to be executed.
-   * @dev Deliver tokens to the contributions contract.
-   * @param _beneficiary Unused
-   * @param _tokenAmount Number of tokens to be purchased
-   */
-  function _processPurchase(address _beneficiary, uint256 _tokenAmount) internal {
-    super._processPurchase(address(contributions), _tokenAmount);
+    contributions.addBalance(
+      _beneficiary,
+      _weiAmount,
+      _getTokenAmount(_weiAmount)
+    );
   }
 }

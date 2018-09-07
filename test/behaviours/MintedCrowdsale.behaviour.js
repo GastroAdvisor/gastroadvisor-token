@@ -5,7 +5,7 @@ const should = require('chai')
   .use(require('chai-bignumber')(BigNumber))
   .should();
 
-export default function ([owner, investor, wallet, purchaser], rate, value) {
+function shouldBehaveLikeMintedCrowdsale ([owner, investor, wallet, purchaser], rate, value) {
   const expectedTokenAmount = rate.mul(value);
 
   describe('accepting payments', function () {
@@ -33,9 +33,9 @@ export default function ([owner, investor, wallet, purchaser], rate, value) {
     });
 
     it('should assign tokens to contributions contract', async function () {
-      let preBalance = await this.token.balanceOf(this.contributions.address);
+      const preBalance = await this.token.balanceOf(this.contributions.address);
       await this.crowdsale.sendTransaction({ value: value, from: investor });
-      let postBalance = await this.token.balanceOf(this.contributions.address);
+      const postBalance = await this.token.balanceOf(this.contributions.address);
       (postBalance.sub(preBalance)).should.be.bignumber.equal(expectedTokenAmount);
     });
 
@@ -73,9 +73,9 @@ export default function ([owner, investor, wallet, purchaser], rate, value) {
     });
 
     it('should assign tokens to contributions contract', async function () {
-      let preBalance = await this.token.balanceOf(this.contributions.address);
+      const preBalance = await this.token.balanceOf(this.contributions.address);
       await this.crowdsale.buyTokens(investor, { value: value, from: purchaser });
-      let postBalance = await this.token.balanceOf(this.contributions.address);
+      const postBalance = await this.token.balanceOf(this.contributions.address);
       (postBalance.sub(preBalance)).should.be.bignumber.equal(expectedTokenAmount);
     });
 
@@ -95,3 +95,7 @@ export default function ([owner, investor, wallet, purchaser], rate, value) {
     });
   });
 }
+
+module.exports = {
+  shouldBehaveLikeMintedCrowdsale,
+};

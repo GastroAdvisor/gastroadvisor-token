@@ -1,10 +1,10 @@
-import ether from '../helpers/ether';
-import { increaseTimeTo } from '../helpers/increaseTime';
-import assertRevert from '../helpers/assertRevert';
+const { ether } = require('../helpers/ether');
+const { increaseTimeTo } = require('../helpers/increaseTime');
+const { assertRevert } = require('../helpers/assertRevert');
 
-import shouldBehaveLikeTimedCrowdsale from './TimedCrowdsale.behaviour';
-import shouldBehaveLikeTokenCappedCrowdsale from './TokenCappedCrowdsale.behaviour';
-import shouldBehaveLikeMintedPostDeliveryCrowdsale from './MintedPostDeliveryCrowdsale.behaviour';
+const { shouldBehaveLikeMintedCrowdsale } = require('./MintedCrowdsale.behaviour');
+const { shouldBehaveLikeTimedCrowdsale } = require('./TimedCrowdsale.behaviour');
+const { shouldBehaveLikeTokenCappedCrowdsale } = require('./TokenCappedCrowdsale.behaviour');
 
 const BigNumber = web3.BigNumber;
 
@@ -15,7 +15,7 @@ require('chai')
 
 const MintableToken = artifacts.require('MintableToken');
 
-export default function ([owner, investor, wallet, purchaser, thirdParty], rate) {
+function shouldBehaveLikeDefaultCrowdsale ([owner, investor, wallet, purchaser, thirdParty], rate) {
   const value = ether(1);
 
   context('like a TimedCrowdsale', function () {
@@ -29,11 +29,11 @@ export default function ([owner, investor, wallet, purchaser, thirdParty], rate)
     shouldBehaveLikeTokenCappedCrowdsale([investor, purchaser]);
   });
 
-  context('like a Minted, PostDelivery Crowdsale', function () {
+  context('like a Minted Crowdsale', function () {
     beforeEach(async function () {
       await increaseTimeTo(this.openingTime);
     });
-    shouldBehaveLikeMintedPostDeliveryCrowdsale([owner, investor, wallet, purchaser], rate, value);
+    shouldBehaveLikeMintedCrowdsale([owner, investor, wallet, purchaser], rate, value);
   });
 
   context('like a DefaultCrowdsale', function () {
@@ -105,20 +105,6 @@ export default function ([owner, investor, wallet, purchaser, thirdParty], rate)
         contributorsLength = await this.contributions.getContributorsLength();
         assert.equal(contributorsLength, 1);
       });
-
-      it('balance of contributions should be equal to total token supply', async function () {
-        const preTotalSupply = await this.token.totalSupply();
-        preTotalSupply.should.be.bignumber.equal(0);
-        const preTokenBalance = await this.token.balanceOf(this.contributions.address);
-        preTokenBalance.should.be.bignumber.equal(0);
-
-        await this.crowdsale.sendTransaction({ value: value, from: investor }).should.be.fulfilled;
-
-        const postTokenBalance = await this.token.balanceOf(this.contributions.address);
-        const postTotalSupply = await this.token.totalSupply();
-
-        postTokenBalance.should.be.bignumber.equal(postTotalSupply);
-      });
     });
 
     describe('low-level purchase', function () {
@@ -153,20 +139,6 @@ export default function ([owner, investor, wallet, purchaser, thirdParty], rate)
 
         contributorsLength = await this.contributions.getContributorsLength();
         assert.equal(contributorsLength, 1);
-      });
-
-      it('balance of contributions should be equal to total token supply', async function () {
-        const preTotalSupply = await this.token.totalSupply();
-        preTotalSupply.should.be.bignumber.equal(0);
-        const preTokenBalance = await this.token.balanceOf(this.contributions.address);
-        preTokenBalance.should.be.bignumber.equal(0);
-
-        await this.crowdsale.buyTokens(investor, { value, from: purchaser }).should.be.fulfilled;
-
-        const postTokenBalance = await this.token.balanceOf(this.contributions.address);
-        const postTotalSupply = await this.token.totalSupply();
-
-        postTokenBalance.should.be.bignumber.equal(postTotalSupply);
       });
     });
 
@@ -251,7 +223,7 @@ export default function ([owner, investor, wallet, purchaser, thirdParty], rate)
   context('safe functions', function () {
     describe('transferAnyERC20Token', function () {
       let anotherERC20;
-      let tokenAmount = new BigNumber(1000);
+      const tokenAmount = new BigNumber(1000);
 
       beforeEach(async function () {
         anotherERC20 = await MintableToken.new({ from: owner });
@@ -284,3 +256,7 @@ export default function ([owner, investor, wallet, purchaser, thirdParty], rate)
     });
   });
 }
+
+module.exports = {
+  shouldBehaveLikeDefaultCrowdsale,
+};

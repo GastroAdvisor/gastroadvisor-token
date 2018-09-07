@@ -1,4 +1,4 @@
-import assertRevert from '../helpers/assertRevert';
+const { assertRevert } = require('../helpers/assertRevert');
 
 const BigNumber = web3.BigNumber;
 
@@ -7,7 +7,7 @@ require('chai')
   .use(require('chai-bignumber')(BigNumber))
   .should();
 
-export default function ([investor, purchaser]) {
+function shouldBehaveLikeTokenCappedCrowdsale ([investor, purchaser]) {
   let tokenCap;
   let cap;
   let lessThanCap;
@@ -83,14 +83,18 @@ export default function ([investor, purchaser]) {
 
     it('should not reach cap if sent just under cap', async function () {
       await this.crowdsale.sendTransaction({ value: cap.minus(1), from: investor });
-      let tokenCapReached = await this.crowdsale.tokenCapReached();
+      const tokenCapReached = await this.crowdsale.tokenCapReached();
       tokenCapReached.should.equal(false);
     });
 
     it('should reach cap if cap sent', async function () {
       await this.crowdsale.sendTransaction({ value: cap, from: investor });
-      let tokenCapReached = await this.crowdsale.tokenCapReached();
+      const tokenCapReached = await this.crowdsale.tokenCapReached();
       tokenCapReached.should.equal(true);
     });
   });
 }
+
+module.exports = {
+  shouldBehaveLikeTokenCappedCrowdsale,
+};

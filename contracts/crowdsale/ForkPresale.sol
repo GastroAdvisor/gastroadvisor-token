@@ -1,9 +1,9 @@
 pragma solidity ^0.4.24;
 
-import "./crowdsale/DefaultCrowdsale.sol";
+import "./base/PostDeliveryCrowdsale.sol";
 
 
-contract ForkICO is DefaultCrowdsale {
+contract ForkPresale is PostDeliveryCrowdsale {
 
   constructor(
     uint256 _startTime,
@@ -14,7 +14,7 @@ contract ForkICO is DefaultCrowdsale {
     address _token,
     address _contributions
   )
-  DefaultCrowdsale(
+  PostDeliveryCrowdsale(
     _startTime,
     _endTime,
     _rate,
