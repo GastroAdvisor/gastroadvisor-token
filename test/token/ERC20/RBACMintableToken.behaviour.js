@@ -1,4 +1,4 @@
-const { assertRevert } = require('../helpers/assertRevert');
+const { assertRevert } = require('../../helpers/assertRevert');
 
 const ROLE_MINTER = 'minter';
 

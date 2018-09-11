@@ -1,11 +1,11 @@
-const { assertRevert } = require('./helpers/assertRevert');
+const { assertRevert } = require('../helpers/assertRevert');
 
-const { shouldBehaveLikeDetailedERC20Token } = require('./behaviours/DetailedERC20.behaviour');
-const { shouldBehaveLikeMintableToken } = require('./behaviours/MintableToken.behaviour');
-const { shouldBehaveLikeRBACMintableToken } = require('./behaviours/RBACMintableToken.behaviour');
-const { shouldBehaveLikeBurnableToken } = require('./behaviours/BurnableToken.behaviour');
-const { shouldBehaveLikeStandardToken } = require('./behaviours/StandardToken.behaviour');
-const { shouldBehaveLikeERC1363BasicToken } = require('./behaviours/ERC1363BasicToken.behaviour');
+const { shouldBehaveLikeDetailedERC20Token } = require('./ERC20/DetailedERC20.behaviour');
+const { shouldBehaveLikeMintableToken } = require('./ERC20/MintableToken.behaviour');
+const { shouldBehaveLikeRBACMintableToken } = require('./ERC20/RBACMintableToken.behaviour');
+const { shouldBehaveLikeBurnableToken } = require('./ERC20/BurnableToken.behaviour');
+const { shouldBehaveLikeStandardToken } = require('./ERC20/StandardToken.behaviour');
+const { shouldBehaveLikeERC1363BasicToken } = require('./ERC1363/ERC1363BasicToken.behaviour');
 
 const BigNumber = web3.BigNumber;
 

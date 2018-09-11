@@ -1,5 +1,5 @@
-const { ether } = require('../helpers/ether');
-const { increaseTimeTo } = require('../helpers/increaseTime');
+const { ether } = require('../../helpers/ether');
+const { increaseTimeTo } = require('../../helpers/increaseTime');
 
 const { shouldBehaveLikeDefaultCrowdsale } = require('./DefaultCrowdsale.behaviour');
 

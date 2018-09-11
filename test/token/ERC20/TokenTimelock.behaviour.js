@@ -1,4 +1,4 @@
-const { increaseTimeTo, duration } = require('../helpers/increaseTime');
+const { increaseTimeTo, duration } = require('../../helpers/increaseTime');
 
 const BigNumber = web3.BigNumber;
 

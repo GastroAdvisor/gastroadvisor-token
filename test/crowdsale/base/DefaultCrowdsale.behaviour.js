@@ -1,6 +1,6 @@
-const { ether } = require('../helpers/ether');
-const { increaseTimeTo } = require('../helpers/increaseTime');
-const { assertRevert } = require('../helpers/assertRevert');
+const { ether } = require('../../helpers/ether');
+const { increaseTimeTo } = require('../../helpers/increaseTime');
+const { assertRevert } = require('../../helpers/assertRevert');
 
 const { shouldBehaveLikeMintedCrowdsale } = require('./MintedCrowdsale.behaviour');
 const { shouldBehaveLikeTimedCrowdsale } = require('./TimedCrowdsale.behaviour');

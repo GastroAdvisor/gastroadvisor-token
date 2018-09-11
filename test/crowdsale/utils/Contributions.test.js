@@ -1,6 +1,6 @@
-const expectEvent = require('./helpers/expectEvent');
-const { ether } = require('./helpers/ether');
-const { assertRevert } = require('./helpers/assertRevert');
+const expectEvent = require('../../helpers/expectEvent');
+const { ether } = require('../../helpers/ether');
+const { assertRevert } = require('../../helpers/assertRevert');
 
 const BigNumber = web3.BigNumber;
 

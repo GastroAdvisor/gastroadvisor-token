@@ -1,8 +1,8 @@
-const { latestTime } = require('./helpers/latestTime');
-const { duration } = require('./helpers/increaseTime');
-const { advanceBlock } = require('./helpers/advanceToBlock');
+const { latestTime } = require('../helpers/latestTime');
+const { duration } = require('../helpers/increaseTime');
+const { advanceBlock } = require('../helpers/advanceToBlock');
 
-const { shouldBehaveLikeTokenTimelock } = require('./behaviours/TokenTimelock.behaviour');
+const { shouldBehaveLikeTokenTimelock } = require('./ERC20/TokenTimelock.behaviour');
 
 const BigNumber = web3.BigNumber;
 

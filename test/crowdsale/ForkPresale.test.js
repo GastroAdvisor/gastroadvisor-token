@@ -1,9 +1,9 @@
-const { advanceBlock } = require('./helpers/advanceToBlock');
-const { duration } = require('./helpers/increaseTime');
-const { latestTime } = require('./helpers/latestTime');
-const { assertRevert } = require('./helpers/assertRevert');
+const { advanceBlock } = require('../helpers/advanceToBlock');
+const { duration } = require('../helpers/increaseTime');
+const { latestTime } = require('../helpers/latestTime');
+const { assertRevert } = require('../helpers/assertRevert');
 
-const { shouldBehaveLikePostDeliveryCrowdsale } = require('./behaviours/PostDeliveryCrowdsale.behaviour');
+const { shouldBehaveLikePostDeliveryCrowdsale } = require('./base/PostDeliveryCrowdsale.behaviour');
 
 const BigNumber = web3.BigNumber;
 
