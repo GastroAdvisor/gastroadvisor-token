@@ -4,8 +4,10 @@ import "openzeppelin-solidity/contracts/token/ERC20/DetailedERC20.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/RBACMintableToken.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/BurnableToken.sol";
 
+import "./ERC1363/ERC1363BasicToken.sol";
 
-contract GastroAdvisorToken is DetailedERC20, RBACMintableToken, BurnableToken { // solium-disable-line max-len
+
+contract GastroAdvisorToken is DetailedERC20, RBACMintableToken, BurnableToken, ERC1363BasicToken { // solium-disable-line max-len
 
   modifier canTransfer() {
     require(mintingFinished);
@@ -14,6 +16,7 @@ contract GastroAdvisorToken is DetailedERC20, RBACMintableToken, BurnableToken {
 
   constructor()
   DetailedERC20("GastroAdvisorToken", "FORK", 18)
+  ERC1363BasicToken()
   public
   {}
 

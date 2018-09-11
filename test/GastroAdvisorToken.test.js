@@ -5,6 +5,7 @@ const { shouldBehaveLikeMintableToken } = require('./behaviours/MintableToken.be
 const { shouldBehaveLikeRBACMintableToken } = require('./behaviours/RBACMintableToken.behaviour');
 const { shouldBehaveLikeBurnableToken } = require('./behaviours/BurnableToken.behaviour');
 const { shouldBehaveLikeStandardToken } = require('./behaviours/StandardToken.behaviour');
+const { shouldBehaveLikeERC1363BasicToken } = require('./behaviours/ERC1363BasicToken.behaviour');
 
 const BigNumber = web3.BigNumber;
 
@@ -62,6 +63,17 @@ contract('GastroAdvisorToken', function ([owner, anotherAccount, minter, recipie
       await this.token.finishMinting({ from: owner });
     });
     shouldBehaveLikeStandardToken([owner, anotherAccount, recipient], initialBalance);
+  });
+
+  context('like a ERC1363BasicToken', function () {
+    const initialBalance = 1000;
+
+    beforeEach(async function () {
+      await this.token.addMinter(minter, { from: owner });
+      await this.token.mint(owner, initialBalance, { from: minter });
+      await this.token.finishMinting({ from: owner });
+    });
+    shouldBehaveLikeERC1363BasicToken([owner, anotherAccount, recipient], initialBalance);
   });
 
   context('like a GastroAdvisor token', function () {
