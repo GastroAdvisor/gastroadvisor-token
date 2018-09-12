@@ -21,7 +21,7 @@ contract ERC1363ReceiverMock is ERC1363Receiver {
     reverts = _reverts;
   }
 
-  function onTokensReceived(
+  function onTransferReceived(
     address _operator,
     address _from,
     uint256 _value,

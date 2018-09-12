@@ -15,7 +15,7 @@ const INTERFACE_IDS = {
     'approveAndCall(address,uint256,bytes)',
   ]),
   ERC1363Receiver: makeInterfaceId([
-    'onTokensReceived(address,address,uint256,bytes)',
+    'onTransferReceived(address,address,uint256,bytes)',
   ]),
   ERC1363Spender: makeInterfaceId([
     'onApprovalReceived(address,uint256,bytes)',

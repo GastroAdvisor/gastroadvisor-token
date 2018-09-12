@@ -36,9 +36,9 @@ contract ERC1363BasicToken is SupportsInterfaceWithLookup, StandardToken, ERC136
    */
   bytes4 internal constant InterfaceId_ERC1363Approve = 0xfb9ec8ce;
 
-  // Equals to `bytes4(keccak256("onTokensReceived(address,address,uint256,bytes)"))`
-  // which can be also obtained as `ERC1363Receiver(0).onTokensReceived.selector`
-  bytes4 private constant ERC1363_RECEIVED = 0x431c50a4;
+  // Equals to `bytes4(keccak256("onTransferReceived(address,address,uint256,bytes)"))`
+  // which can be also obtained as `ERC1363Receiver(0).onTransferReceived.selector`
+  bytes4 private constant ERC1363_RECEIVED = 0x88a7ca5c;
 
   // Equals to `bytes4(keccak256("onApprovalReceived(address,uint256,bytes)"))`
   // which can be also obtained as `ERC1363Spender(0).onApprovalReceived.selector`
@@ -143,7 +143,7 @@ contract ERC1363BasicToken is SupportsInterfaceWithLookup, StandardToken, ERC136
   }
 
   /**
-   * @dev Internal function to invoke `onTokensReceived` on a target address
+   * @dev Internal function to invoke `onTransferReceived` on a target address
    *  The call is not executed if the target address is not a contract
    * @param _from address Representing the previous owner of the given token value
    * @param _to address Target address that will receive the tokens
@@ -163,7 +163,7 @@ contract ERC1363BasicToken is SupportsInterfaceWithLookup, StandardToken, ERC136
     if (!_to.isContract()) {
       return false;
     }
-    bytes4 retval = ERC1363Receiver(_to).onTokensReceived(
+    bytes4 retval = ERC1363Receiver(_to).onTransferReceived(
       msg.sender, _from, _value, _data
     );
     return (retval == ERC1363_RECEIVED);
