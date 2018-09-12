@@ -1,4 +1,5 @@
 const { assertRevert } = require('../helpers/assertRevert');
+const { sendTransaction } = require('../helpers/sendTransaction');
 
 const { shouldBehaveLikeDetailedERC20Token } = require('./ERC20/DetailedERC20.behaviour');
 const { shouldBehaveLikeMintableToken } = require('./ERC20/MintableToken.behaviour');
@@ -16,6 +17,7 @@ require('chai')
 
 const GastroAdvisorToken = artifacts.require('GastroAdvisorToken');
 const MintableToken = artifacts.require('MintableToken');
+const ERC1363Receiver = artifacts.require('ERC1363ReceiverMock.sol');
 
 contract('GastroAdvisorToken', function ([owner, anotherAccount, minter, recipient, thirdParty]) {
   const _name = 'GastroAdvisorToken';
@@ -65,15 +67,95 @@ contract('GastroAdvisorToken', function ([owner, anotherAccount, minter, recipie
     shouldBehaveLikeStandardToken([owner, anotherAccount, recipient], initialBalance);
   });
 
-  context('like a ERC1363BasicToken', function () {
+  context('like a ERC1363BasicToken ', function () {
+    const RECEIVER_MAGIC_VALUE = '0x88a7ca5c';
     const initialBalance = 1000;
 
     beforeEach(async function () {
       await this.token.addMinter(minter, { from: owner });
       await this.token.mint(owner, initialBalance, { from: minter });
-      await this.token.finishMinting({ from: owner });
+
+      this.receiver = await ERC1363Receiver.new(RECEIVER_MAGIC_VALUE, false);
+      this.to = this.receiver.address;
     });
-    shouldBehaveLikeERC1363BasicToken([owner, anotherAccount, recipient], initialBalance);
+
+    describe('before finishMinting', function () {
+      describe('via transferFromAndCall', function () {
+        beforeEach(async function () {
+          await this.token.approve(anotherAccount, initialBalance, { from: owner });
+        });
+
+        it('reverts', async function () {
+          const transferFromAndCallWithData = function (from, to, value, opts) {
+            return sendTransaction(
+              this.token,
+              'transferFromAndCall',
+              'address,address,uint256,bytes',
+              [from, to, value, '0x42'],
+              opts
+            );
+          };
+
+          const transferFromAndCallWithoutData = function (from, to, value, opts) {
+            return sendTransaction(
+              this.token,
+              'transferFromAndCall',
+              'address,address,uint256',
+              [from, to, value],
+              opts
+            );
+          };
+
+          await assertRevert(
+            transferFromAndCallWithData.call(this, owner, this.to, initialBalance, { from: anotherAccount })
+          );
+
+          await assertRevert(
+            transferFromAndCallWithoutData.call(this, owner, this.to, initialBalance, { from: anotherAccount })
+          );
+        });
+      });
+
+      describe('via transferAndCall', function () {
+        it('reverts', async function () {
+          const transferAndCallWithData = function (to, value, opts) {
+            return sendTransaction(
+              this.token,
+              'transferAndCall',
+              'address,uint256,bytes',
+              [to, value, '0x42'],
+              opts
+            );
+          };
+
+          const transferAndCallWithoutData = function (to, value, opts) {
+            return sendTransaction(
+              this.token,
+              'transferAndCall',
+              'address,uint256',
+              [to, value],
+              opts
+            );
+          };
+
+          await assertRevert(
+            transferAndCallWithData.call(this, this.to, initialBalance, { from: anotherAccount })
+          );
+
+          await assertRevert(
+            transferAndCallWithoutData.call(this, this.to, initialBalance, { from: anotherAccount })
+          );
+        });
+      });
+    });
+
+    describe('after finishMinting', function () {
+      beforeEach(async function () {
+        await this.token.finishMinting({ from: owner });
+      });
+
+      shouldBehaveLikeERC1363BasicToken([owner, anotherAccount, recipient], initialBalance);
+    });
   });
 
   context('like a GastroAdvisor token', function () {
