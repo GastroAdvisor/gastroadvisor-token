@@ -3,7 +3,6 @@ pragma solidity ^0.4.24;
 import "openzeppelin-solidity/contracts/AddressUtils.sol";
 // solium-disable-next-line max-len
 import "openzeppelin-solidity/contracts/introspection/SupportsInterfaceWithLookup.sol";
-import "openzeppelin-solidity/contracts/token/ERC20/StandardToken.sol";
 
 import "./ERC1363.sol";
 import "./ERC1363Receiver.sol";
@@ -15,7 +14,7 @@ import "./ERC1363Spender.sol";
  * @author Vittorio Minacori (@vittominacori)
  * @dev Implementation of an ERC1363 interface
  */
-contract ERC1363BasicToken is SupportsInterfaceWithLookup, StandardToken, ERC1363 { // solium-disable-line max-len
+contract ERC1363BasicToken is SupportsInterfaceWithLookup, ERC1363 { // solium-disable-line max-len
   using AddressUtils for address;
 
   /*
