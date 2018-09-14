@@ -5,7 +5,13 @@ import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 
 contract TokenRecover is Ownable {
-  // it's a safe function allowing to recover any ERC20 sent into the contract for error
+
+  /**
+   * @dev It's a safe function allowing to recover any ERC20 sent into the contract for error
+   * @param _tokenAddress address The token contract address
+   * @param _tokens Number of tokens to be sent
+   * @return bool
+   */
   function transferAnyERC20Token(
     address _tokenAddress,
     uint256 _tokens

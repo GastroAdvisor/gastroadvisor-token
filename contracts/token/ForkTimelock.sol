@@ -4,6 +4,7 @@ import "openzeppelin-solidity/contracts/token/ERC20/TokenTimelock.sol";
 
 
 contract ForkTimelock is TokenTimelock {
+
   constructor(
     ERC20Basic _token,
     address _beneficiary,

@@ -40,18 +40,6 @@ contract DefaultCrowdsale is TimedCrowdsale, MintedCrowdsale, TokenCappedCrowdsa
     return hasClosed() || tokenCapReached();
   }
 
-  // it's a safe function allowing to recover any ERC20 sent into the contract for error
-  function transferAnyERC20Token(
-    address _tokenAddress,
-    uint256 _tokens
-  )
-  public
-  onlyOwner
-  returns (bool success)
-  {
-    return ERC20Basic(_tokenAddress).transfer(owner, _tokens);
-  }
-
   /**
    * @dev Update the contributions contract states
    * @param _beneficiary Address receiving the tokens

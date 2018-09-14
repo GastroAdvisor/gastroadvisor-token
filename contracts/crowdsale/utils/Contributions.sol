@@ -45,7 +45,7 @@ contract Contributions is RBAC, Ownable {
   }
 
   /**
-   * @dev add a minter role to an array of address
+   * @dev add a minter role to an array of addresses
    * @param _minters address[]
    */
   function addMinters(address[] _minters) public onlyOwner {
