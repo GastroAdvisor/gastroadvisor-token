@@ -7,6 +7,8 @@ const { shouldBehaveLikeRBACMintableToken } = require('./ERC20/RBACMintableToken
 const { shouldBehaveLikeBurnableToken } = require('./ERC20/BurnableToken.behaviour');
 const { shouldBehaveLikeStandardToken } = require('./ERC20/StandardToken.behaviour');
 const { shouldBehaveLikeERC1363BasicToken } = require('./ERC1363/ERC1363BasicToken.behaviour');
+const { shouldBehaveLikeTokenRecover } = require('../safe/TokenRecover.behaviour');
+const { shouldBehaveLikeRBAC } = require('../access/RBAC.behaviour');
 
 const BigNumber = web3.BigNumber;
 
@@ -16,10 +18,11 @@ require('chai')
   .should();
 
 const GastroAdvisorToken = artifacts.require('GastroAdvisorToken');
-const MintableToken = artifacts.require('MintableToken');
 const ERC1363Receiver = artifacts.require('ERC1363ReceiverMock.sol');
 
-contract('GastroAdvisorToken', function ([owner, anotherAccount, minter, recipient, thirdParty]) {
+contract('GastroAdvisorToken', function (
+  [owner, anotherAccount, minter, recipient, futureMinter, anotherFutureMinter, thirdParty]
+) {
   const _name = 'GastroAdvisorToken';
   const _symbol = 'FORK';
   const _decimals = 18;
@@ -176,39 +179,19 @@ contract('GastroAdvisorToken', function ([owner, anotherAccount, minter, recipie
     });
   });
 
-  context('safe functions', function () {
-    describe('transferAnyERC20Token', function () {
-      let anotherERC20;
-      const tokenAmount = new BigNumber(1000);
-
-      beforeEach(async function () {
-        anotherERC20 = await MintableToken.new({ from: owner });
-        await anotherERC20.mint(this.token.address, tokenAmount, { from: owner });
-      });
-
-      describe('if owner is calling', function () {
-        it('should safe transfer any ERC20 sent for error into the contract', async function () {
-          const contractPre = await anotherERC20.balanceOf(this.token.address);
-          contractPre.should.be.bignumber.equal(tokenAmount);
-          const ownerPre = await anotherERC20.balanceOf(owner);
-          ownerPre.should.be.bignumber.equal(0);
-
-          await this.token.transferAnyERC20Token(anotherERC20.address, tokenAmount, { from: owner });
-
-          const contractPost = await anotherERC20.balanceOf(this.token.address);
-          contractPost.should.be.bignumber.equal(0);
-          const ownerPost = await anotherERC20.balanceOf(owner);
-          ownerPost.should.be.bignumber.equal(tokenAmount);
-        });
-      });
-
-      describe('if third party is calling', function () {
-        it('reverts', async function () {
-          await assertRevert(
-            this.token.transferAnyERC20Token(anotherERC20.address, tokenAmount, { from: thirdParty })
-          );
-        });
-      });
+  context('like a RBAC', function () {
+    beforeEach(async function () {
+      this.instance = this.token;
     });
+
+    shouldBehaveLikeRBAC([owner, minter, futureMinter, anotherFutureMinter, thirdParty]);
+  });
+
+  context('like a TokenRecover', function () {
+    beforeEach(async function () {
+      this.instance = this.token;
+    });
+
+    shouldBehaveLikeTokenRecover([owner, thirdParty]);
   });
 });

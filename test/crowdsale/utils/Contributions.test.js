@@ -1,6 +1,7 @@
-const expectEvent = require('../../helpers/expectEvent');
 const { ether } = require('../../helpers/ether');
 const { assertRevert } = require('../../helpers/assertRevert');
+
+const { shouldBehaveLikeRBAC } = require('../../access/RBAC.behaviour');
 
 const BigNumber = web3.BigNumber;
 
@@ -11,7 +12,9 @@ require('chai')
 
 const Contributions = artifacts.require('Contributions');
 
-contract('Contributions', function ([_, owner, minter, futureMinter, thirdParty, anotherThirdParty]) {
+contract('Contributions', function (
+  [_, owner, minter, futureMinter, anotherFutureMinter, thirdParty, anotherThirdParty]
+) {
   const tokenToAdd = new BigNumber(100);
   const ethToAdd = ether(1);
 
@@ -120,51 +123,11 @@ contract('Contributions', function ([_, owner, minter, futureMinter, thirdParty,
     });
   });
 
-  context('test RBAC functions', function () {
-    describe('in normal conditions', function () {
-      it('allows owner to add a minter', async function () {
-        await this.contributions.addMinter(futureMinter, { from: owner }).should.be.fulfilled;
-      });
-
-      it('allows owner to remove a minter', async function () {
-        await this.contributions.addMinter(futureMinter, { from: owner }).should.be.fulfilled;
-        await this.contributions.removeMinter(futureMinter, { from: owner }).should.be.fulfilled;
-      });
-
-      it('announces a RoleAdded event on addRole', async function () {
-        await expectEvent.inTransaction(
-          this.contributions.addMinter(futureMinter, { from: owner }),
-          'RoleAdded'
-        );
-      });
-
-      it('announces a RoleRemoved event on removeRole', async function () {
-        await expectEvent.inTransaction(
-          this.contributions.removeMinter(minter, { from: owner }),
-          'RoleRemoved'
-        );
-      });
+  context('like a RBAC', function () {
+    beforeEach(async function () {
+      this.instance = this.contributions;
     });
 
-    describe('in adversarial conditions', function () {
-      it('does not allow "thirdParty" except owner to add a minter', async function () {
-        await assertRevert(
-          this.contributions.addMinter(futureMinter, { from: minter })
-        );
-        await assertRevert(
-          this.contributions.addMinter(futureMinter, { from: thirdParty })
-        );
-      });
-
-      it('does not allow "thirdParty" except owner to remove a minter', async function () {
-        await this.contributions.addMinter(futureMinter, { from: owner }).should.be.fulfilled;
-        await assertRevert(
-          this.contributions.removeMinter(futureMinter, { from: minter })
-        );
-        await assertRevert(
-          this.contributions.removeMinter(futureMinter, { from: thirdParty })
-        );
-      });
-    });
+    shouldBehaveLikeRBAC([owner, minter, futureMinter, anotherFutureMinter, thirdParty]);
   });
 });

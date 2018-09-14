@@ -26,19 +26,6 @@ function shouldBehaveLikeMintedCrowdsale ([owner, investor, wallet, purchaser], 
       event.args.amount.should.be.bignumber.equal(expectedTokenAmount);
     });
 
-    it('should not immediately assign tokens to beneficiary', async function () {
-      await this.crowdsale.sendTransaction({ value: value, from: investor });
-      const balance = await this.token.balanceOf(investor);
-      balance.should.be.bignumber.equal(0);
-    });
-
-    it('should assign tokens to contributions contract', async function () {
-      const preBalance = await this.token.balanceOf(this.contributions.address);
-      await this.crowdsale.sendTransaction({ value: value, from: investor });
-      const postBalance = await this.token.balanceOf(this.contributions.address);
-      (postBalance.sub(preBalance)).should.be.bignumber.equal(expectedTokenAmount);
-    });
-
     it('weiRaised should increase', async function () {
       await this.crowdsale.sendTransaction({ value: value.div(2), from: investor });
       await this.crowdsale.sendTransaction({ value: value.div(2), from: investor });
@@ -64,19 +51,6 @@ function shouldBehaveLikeMintedCrowdsale ([owner, investor, wallet, purchaser], 
       event.args.beneficiary.should.equal(investor);
       event.args.value.should.be.bignumber.equal(value);
       event.args.amount.should.be.bignumber.equal(expectedTokenAmount);
-    });
-
-    it('should not immediately assign tokens to beneficiary', async function () {
-      await this.crowdsale.buyTokens(investor, { value: value, from: purchaser });
-      const balance = await this.token.balanceOf(investor);
-      balance.should.be.bignumber.equal(0);
-    });
-
-    it('should assign tokens to contributions contract', async function () {
-      const preBalance = await this.token.balanceOf(this.contributions.address);
-      await this.crowdsale.buyTokens(investor, { value: value, from: purchaser });
-      const postBalance = await this.token.balanceOf(this.contributions.address);
-      (postBalance.sub(preBalance)).should.be.bignumber.equal(expectedTokenAmount);
     });
 
     it('weiRaised should increase', async function () {

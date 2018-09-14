@@ -1,61 +1,54 @@
 pragma solidity ^0.4.24;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
-import "../token/GastroAdvisorToken.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/MintableToken.sol";
+import "../safe/TokenRecover.sol";
 
 
-contract CappedBountyMinter is Ownable {
+contract CappedBountyMinter is TokenRecover {
   using SafeMath for uint256;
 
-  GastroAdvisorToken public token;
+  ERC20 public token;
 
   uint256 public cap;
   uint256 public totalGivenBountyTokens;
   mapping (address => uint256) public givenBountyTokens;
 
-  uint256 decimals;
+  uint256 decimals = 18;
 
-  constructor(address _token, uint256 _cap) public {
+  constructor(ERC20 _token, uint256 _cap) public {
     require(_token != address(0));
     require(_cap > 0);
 
-    token = GastroAdvisorToken(_token);
-
-    decimals = uint256(token.decimals());
+    token = _token;
     cap = _cap * (10 ** decimals);
   }
 
-  function multiSend(address[] addresses, uint256[] amounts) public onlyOwner {
-    require(addresses.length > 0);
-    require(amounts.length > 0);
-    require(addresses.length == amounts.length);
+  function multiSend(
+    address[] _addresses,
+    uint256[] _amounts
+  )
+  public
+  onlyOwner
+  {
+    require(_addresses.length > 0);
+    require(_amounts.length > 0);
+    require(_addresses.length == _amounts.length);
 
-    for (uint i = 0; i < addresses.length; i++) {
-      address to = addresses[i];
-      uint256 value = amounts[i] * (10 ** decimals);
+    for (uint i = 0; i < _addresses.length; i++) {
+      address to = _addresses[i];
+      uint256 value = _amounts[i] * (10 ** decimals);
 
       givenBountyTokens[to] = givenBountyTokens[to].add(value);
       totalGivenBountyTokens = totalGivenBountyTokens.add(value);
 
       require(totalGivenBountyTokens <= cap);
 
-      token.mint(to, value);
+      require(MintableToken(address(token)).mint(to, value));
     }
   }
 
   function remainingTokens() public view returns(uint256) {
     return cap.sub(totalGivenBountyTokens);
-  }
-
-  // it's a safe function allowing to recover any ERC20 sent into the contract for error
-  function transferAnyERC20Token(
-    address _tokenAddress,
-    uint256 _tokens
-  )
-  public
-  onlyOwner
-  returns (bool success)
-  {
-    return ERC20Basic(_tokenAddress).transfer(owner, _tokens);
   }
 }

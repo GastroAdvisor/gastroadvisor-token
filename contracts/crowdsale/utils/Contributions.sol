@@ -38,18 +38,29 @@ contract Contributions is RBAC, Ownable {
 
   /**
    * @dev add a minter role to an address
-   * @param minter address
+   * @param _minter address
    */
-  function addMinter(address minter) public onlyOwner {
-    addRole(minter, ROLE_MINTER);
+  function addMinter(address _minter) public onlyOwner {
+    addRole(_minter, ROLE_MINTER);
+  }
+
+  /**
+   * @dev add a minter role to an array of address
+   * @param _minters address[]
+   */
+  function addMinters(address[] _minters) public onlyOwner {
+    require(_minters.length > 0);
+    for (uint i = 0; i < _minters.length; i++) {
+      addRole(_minters[i], ROLE_MINTER);
+    }
   }
 
   /**
    * @dev remove a minter role from an address
-   * @param minter address
+   * @param _minter address
    */
-  function removeMinter(address minter) public onlyOwner {
-    removeRole(minter, ROLE_MINTER);
+  function removeMinter(address _minter) public onlyOwner {
+    removeRole(_minter, ROLE_MINTER);
   }
 
   function getContributorsLength() public view returns (uint) {

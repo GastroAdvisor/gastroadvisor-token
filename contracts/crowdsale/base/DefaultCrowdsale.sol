@@ -3,11 +3,11 @@ pragma solidity ^0.4.24;
 import "openzeppelin-solidity/contracts/crowdsale/validation/TimedCrowdsale.sol"; // solium-disable-line max-len
 import "openzeppelin-solidity/contracts/crowdsale/emission/MintedCrowdsale.sol"; // solium-disable-line max-len
 import "./TokenCappedCrowdsale.sol";
-
+import "../../safe/TokenRecover.sol";
 import "../utils/Contributions.sol";
 
 
-contract DefaultCrowdsale is TimedCrowdsale, MintedCrowdsale, TokenCappedCrowdsale, Ownable { // solium-disable-line max-len
+contract DefaultCrowdsale is TimedCrowdsale, MintedCrowdsale, TokenCappedCrowdsale, TokenRecover { // solium-disable-line max-len
 
   Contributions public contributions;
 
