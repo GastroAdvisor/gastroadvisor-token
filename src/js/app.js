@@ -30,6 +30,30 @@ App = {
       App.contracts.GastroAdvisorToken.setProvider(App.web3Provider);
     });
 
+    $.getJSON('Contributions.json', function (data) {
+      // Get the necessary contract artifact file and instantiate it with truffle-contract.
+      App.contracts.Contributions = TruffleContract(data);
+
+      // Set the provider for our contract.
+      App.contracts.Contributions.setProvider(App.web3Provider);
+    });
+
+    $.getJSON('CrowdGenerator.json', function (data) {
+      // Get the necessary contract artifact file and instantiate it with truffle-contract.
+      App.contracts.CrowdGenerator = TruffleContract(data);
+
+      // Set the provider for our contract.
+      App.contracts.CrowdGenerator.setProvider(App.web3Provider);
+    });
+
+    $.getJSON('ForkCrowdsale.json', function (data) {
+      // Get the necessary contract artifact file and instantiate it with truffle-contract.
+      App.contracts.ForkCrowdsale = TruffleContract(data);
+
+      // Set the provider for our contract.
+      App.contracts.ForkCrowdsale.setProvider(App.web3Provider);
+    });
+
     $.getJSON('CappedBountyMinter.json', function (data) {
       // Get the necessary contract artifact file and instantiate it with truffle-contract.
       App.contracts.CappedBountyMinter = TruffleContract(data);
