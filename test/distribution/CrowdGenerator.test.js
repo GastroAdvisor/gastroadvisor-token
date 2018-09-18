@@ -1,3 +1,4 @@
+const { ether } = require('../helpers/ether');
 const { advanceBlock } = require('../helpers/advanceToBlock');
 const { duration } = require('../helpers/increaseTime');
 const { latestTime } = require('../helpers/latestTime');
@@ -24,6 +25,20 @@ contract('CrowdGenerator', function ([owner, wallet, thirdParty]) {
   const tokenDecimals = 18;
   const tokenCap = (new BigNumber(100)).mul(Math.pow(10, tokenDecimals));
 
+  const bonusRanges = [
+    ether(1),
+    ether(0.6),
+    ether(0.3),
+    ether(0),
+  ];
+
+  const bonusValues = [
+    new BigNumber(100),
+    new BigNumber(90),
+    new BigNumber(70),
+    new BigNumber(50),
+  ];
+
   before(async function () {
     // Advance to the next block to correctly read time in the solidity "now" function interpreted by testrpc
     await advanceBlock();
@@ -42,7 +57,9 @@ contract('CrowdGenerator', function ([owner, wallet, thirdParty]) {
       wallet,
       tokenCap,
       this.token.address,
-      this.contributions.address
+      this.contributions.address,
+      bonusRanges,
+      bonusValues
     );
   });
 
@@ -64,7 +81,9 @@ contract('CrowdGenerator', function ([owner, wallet, thirdParty]) {
           wallet,
           tokenCap,
           this.token.address,
-          this.contributions.address
+          this.contributions.address,
+          bonusRanges,
+          bonusValues
         )
       );
     });
@@ -77,7 +96,9 @@ contract('CrowdGenerator', function ([owner, wallet, thirdParty]) {
           ZERO_ADDRESS,
           tokenCap,
           this.token.address,
-          this.contributions.address
+          this.contributions.address,
+          bonusRanges,
+          bonusValues
         )
       );
     });
@@ -90,7 +111,9 @@ contract('CrowdGenerator', function ([owner, wallet, thirdParty]) {
           wallet,
           tokenCap,
           ZERO_ADDRESS,
-          this.contributions.address
+          this.contributions.address,
+          bonusRanges,
+          bonusValues
         )
       );
     });
@@ -103,7 +126,9 @@ contract('CrowdGenerator', function ([owner, wallet, thirdParty]) {
           wallet,
           tokenCap,
           this.token.address,
-          this.contributions.address
+          this.contributions.address,
+          bonusRanges,
+          bonusValues
         )
       );
     });
@@ -116,7 +141,9 @@ contract('CrowdGenerator', function ([owner, wallet, thirdParty]) {
           wallet,
           tokenCap,
           this.token.address,
-          ZERO_ADDRESS
+          ZERO_ADDRESS,
+          bonusRanges,
+          bonusValues
         )
       );
     });
@@ -129,7 +156,9 @@ contract('CrowdGenerator', function ([owner, wallet, thirdParty]) {
           wallet,
           0,
           this.token.address,
-          this.contributions.address
+          this.contributions.address,
+          bonusRanges,
+          bonusValues
         )
       );
     });

@@ -1,9 +1,12 @@
 pragma solidity ^0.4.24;
 
-import "../crowdsale/ForkCrowdsale.sol";
+import "../crowdsale/ForkRC.sol";
 
 
 contract CrowdGenerator is TokenRecover {
+
+  uint256[] public bonusRanges;
+  uint256[] public bonusValues;
 
   uint256 public endTime;
   uint256 public rate;
@@ -24,7 +27,9 @@ contract CrowdGenerator is TokenRecover {
     address _wallet,
     uint256 _tokenCap,
     address _token,
-    address _contributions
+    address _contributions,
+    uint256[] _bonusRanges,
+    uint256[] _bonusValues
   ) public {
     // solium-disable-next-line security/no-block-members
     require(_endTime >= block.timestamp);
@@ -33,6 +38,13 @@ contract CrowdGenerator is TokenRecover {
     require(_tokenCap > 0);
     require(_token != address(0));
     require(_contributions != address(0));
+    require(bonusRanges.length == 0 && bonusValues.length == 0);
+    require(_bonusRanges.length == _bonusValues.length);
+
+    for (uint256 i = 0; i < (_bonusValues.length - 1); i++) {
+      require(_bonusValues[i] > _bonusValues[i + 1]);
+      require(_bonusRanges[i] > _bonusRanges[i + 1]);
+    }
 
     endTime = _endTime;
     rate = _rate;
@@ -40,11 +52,13 @@ contract CrowdGenerator is TokenRecover {
     tokenCap = _tokenCap;
     token = _token;
     contributions = _contributions;
+    bonusRanges = _bonusRanges;
+    bonusValues = _bonusValues;
   }
 
   function startCrowdsales(uint256 _number) public onlyOwner {
     for (uint256 i = 0; i < _number; i++) {
-      ForkCrowdsale crowd = new ForkCrowdsale(
+      ForkRC crowd = new ForkRC(
         block.timestamp, // solium-disable-line security/no-block-members
         endTime,
         rate,
@@ -54,6 +68,7 @@ contract CrowdGenerator is TokenRecover {
         contributions
       );
 
+      crowd.setBonusRates(bonusRanges, bonusValues);
       crowd.transferOwnership(msg.sender);
       crowdsaleList.push(address(crowd));
       emit CrowdsaleStarted(address(crowd));

@@ -19,7 +19,7 @@ function shouldBehaveLikePostDeliveryCrowdsale ([owner, investor, wallet, purcha
     shouldBehaveLikeDefaultCrowdsale([owner, investor, wallet, purchaser, thirdParty], rate);
   });
 
-  context('like a PostDeliveryCrowdsale', function () {
+  context('like a PostDelivery Crowdsale', function () {
     describe('high-level purchase', function () {
       beforeEach(async function () {
         await increaseTimeTo(this.openingTime);
