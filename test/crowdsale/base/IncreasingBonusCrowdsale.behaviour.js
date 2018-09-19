@@ -58,6 +58,58 @@ function shouldBehaveLikeIncreasingBonusCrowdsale ([owner, investor, wallet, pur
           });
         });
 
+        describe('if ranges and values have different length', function () {
+          it('reverts', async function () {
+            const br = [
+              ether(1),
+              ether(0.6),
+            ];
+
+            const bv = [
+              new BigNumber(100),
+              new BigNumber(90),
+            ];
+
+            await assertRevert(
+              this.crowdsale.setBonusRates(br, bonusValues, { from: owner })
+            );
+
+            await assertRevert(
+              this.crowdsale.setBonusRates(bonusRanges, bv, { from: owner })
+            );
+          });
+        });
+
+        describe('if ranges are ordered reverse', function () {
+          const br = [
+            ether(0),
+            ether(0.3),
+            ether(0.6),
+            ether(1),
+          ];
+
+          it('reverts', async function () {
+            await assertRevert(
+              this.crowdsale.setBonusRates(br, bonusValues, { from: owner })
+            );
+          });
+        });
+
+        describe('if values are ordered reverse', function () {
+          const bv = [
+            new BigNumber(50),
+            new BigNumber(70),
+            new BigNumber(90),
+            new BigNumber(100),
+          ];
+
+          it('reverts', async function () {
+            await assertRevert(
+              this.crowdsale.setBonusRates(bonusRanges, bv, { from: owner })
+            );
+          });
+        });
+
         describe('high-level purchase', function () {
           beforeEach(async function () {
             await this.crowdsale.setBonusRates(bonusRanges, bonusValues, { from: owner });

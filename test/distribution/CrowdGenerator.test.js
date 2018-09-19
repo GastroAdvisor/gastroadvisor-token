@@ -162,6 +162,94 @@ contract('CrowdGenerator', function ([owner, wallet, thirdParty]) {
         )
       );
     });
+
+    describe('if ranges and values have different length', function () {
+      it('reverts', async function () {
+        const br = [
+          ether(1),
+          ether(0.6),
+        ];
+
+        const bv = [
+          new BigNumber(100),
+          new BigNumber(90),
+        ];
+
+        await assertRevert(
+          CrowdGenerator.new(
+            this.closingTime,
+            rate,
+            wallet,
+            tokenCap,
+            this.token.address,
+            this.contributions.address,
+            br,
+            bonusValues,
+          )
+        );
+
+        await assertRevert(
+          CrowdGenerator.new(
+            this.closingTime,
+            rate,
+            wallet,
+            tokenCap,
+            this.token.address,
+            this.contributions.address,
+            bonusRanges,
+            bv,
+          )
+        );
+      });
+    });
+
+    describe('if ranges are ordered reverse', function () {
+      const br = [
+        ether(0),
+        ether(0.3),
+        ether(0.6),
+        ether(1),
+      ];
+
+      it('reverts', async function () {
+        await assertRevert(
+          CrowdGenerator.new(
+            this.closingTime,
+            rate,
+            wallet,
+            tokenCap,
+            this.token.address,
+            this.contributions.address,
+            br,
+            bonusValues,
+          )
+        );
+      });
+    });
+
+    describe('if values are ordered reverse', function () {
+      const bv = [
+        new BigNumber(50),
+        new BigNumber(70),
+        new BigNumber(90),
+        new BigNumber(100),
+      ];
+
+      it('reverts', async function () {
+        await assertRevert(
+          CrowdGenerator.new(
+            this.closingTime,
+            rate,
+            wallet,
+            tokenCap,
+            this.token.address,
+            this.contributions.address,
+            bonusRanges,
+            bv,
+          )
+        );
+      });
+    });
   });
 
   describe('creating crowdsales', function () {
