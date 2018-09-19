@@ -38,7 +38,6 @@ contract CrowdGenerator is TokenRecover {
     require(_tokenCap > 0);
     require(_token != address(0));
     require(_contributions != address(0));
-    require(bonusRanges.length == 0 && bonusValues.length == 0);
     require(_bonusRanges.length == _bonusValues.length);
 
     for (uint256 i = 0; i < (_bonusValues.length - 1); i++) {
