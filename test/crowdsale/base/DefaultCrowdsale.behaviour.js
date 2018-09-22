@@ -1,5 +1,6 @@
 const { ether } = require('../../helpers/ether');
 const { increaseTimeTo } = require('../../helpers/increaseTime');
+const { assertRevert } = require('../../helpers/assertRevert');
 
 const { shouldBehaveLikeMintedCrowdsale } = require('./MintedCrowdsale.behaviour');
 const { shouldBehaveLikeTimedCrowdsale } = require('./TimedCrowdsale.behaviour');
@@ -35,6 +36,12 @@ function shouldBehaveLikeDefaultCrowdsale ([owner, investor, wallet, purchaser, 
   });
 
   context('like a DefaultCrowdsale', function () {
+    let minContribution;
+
+    beforeEach(async function () {
+      minContribution = await this.crowdsale.minimumContribution();
+    });
+
     describe('high-level purchase', function () {
       beforeEach(async function () {
         await increaseTimeTo(this.openingTime);
@@ -68,6 +75,22 @@ function shouldBehaveLikeDefaultCrowdsale ([owner, investor, wallet, purchaser, 
         contributorsLength = await this.contributions.getContributorsLength();
         assert.equal(contributorsLength, 1);
       });
+
+      it('should increase transactions count', async function () {
+        let transactionCount = await this.crowdsale.transactionCount();
+        transactionCount.should.be.bignumber.equal(0);
+
+        await this.crowdsale.sendTransaction({ value: value, from: investor });
+
+        transactionCount = await this.crowdsale.transactionCount();
+        transactionCount.should.be.bignumber.equal(1);
+      });
+
+      it('should fail if less than minimum contribution', async function () {
+        await assertRevert(
+          this.crowdsale.sendTransaction({ value: minContribution.sub(1), from: investor })
+        )
+      })
     });
 
     describe('low-level purchase', function () {
@@ -103,6 +126,22 @@ function shouldBehaveLikeDefaultCrowdsale ([owner, investor, wallet, purchaser, 
         contributorsLength = await this.contributions.getContributorsLength();
         assert.equal(contributorsLength, 1);
       });
+
+      it('should increase transactions count', async function () {
+        let transactionCount = await this.crowdsale.transactionCount();
+        transactionCount.should.be.bignumber.equal(0);
+
+        await this.crowdsale.buyTokens(investor, { value, from: purchaser });
+
+        transactionCount = await this.crowdsale.transactionCount();
+        transactionCount.should.be.bignumber.equal(1);
+      });
+
+      it('should fail if less than minimum contribution', async function () {
+        await assertRevert(
+          this.crowdsale.buyTokens(investor, { value: minContribution.sub(1), from: purchaser })
+        )
+      })
     });
 
     context('check statuses', function () {

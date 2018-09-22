@@ -11,19 +11,21 @@ function shouldBehaveLikeTokenCappedCrowdsale ([investor, purchaser]) {
   let tokenCap;
   let cap;
   let lessThanCap;
+  let minContribution;
 
   beforeEach(async function () {
     const currentRate = await this.crowdsale.rate();
     tokenCap = await this.crowdsale.tokenCap();
     cap = tokenCap.div(currentRate);
-    lessThanCap = cap.minus(1);
+    minContribution = await this.crowdsale.minimumContribution();
+    lessThanCap = cap.minus(minContribution);
   });
 
   describe('accepting payments', function () {
     describe('high-level purchase', function () {
       it('should accept payments within cap', async function () {
         await this.crowdsale.sendTransaction({ value: cap.minus(lessThanCap), from: investor }).should.be.fulfilled;
-        await this.crowdsale.sendTransaction({ value: lessThanCap, from: investor }).should.be.fulfilled;
+        await this.crowdsale.sendTransaction({ value: minContribution, from: investor }).should.be.fulfilled;
       });
 
       it('soldTokens should increase', async function () {
@@ -50,7 +52,7 @@ function shouldBehaveLikeTokenCappedCrowdsale ([investor, purchaser]) {
           value: cap.minus(lessThanCap),
           from: purchaser,
         }).should.be.fulfilled;
-        await this.crowdsale.buyTokens(investor, { value: lessThanCap, from: purchaser }).should.be.fulfilled;
+        await this.crowdsale.buyTokens(investor, { value: minContribution, from: purchaser }).should.be.fulfilled;
       });
 
       it('soldTokens should increase', async function () {

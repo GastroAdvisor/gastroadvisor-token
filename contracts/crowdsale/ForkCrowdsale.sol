@@ -11,6 +11,7 @@ contract ForkCrowdsale is DefaultCrowdsale {
     uint256 _rate,
     address _wallet,
     uint256 _tokenCap,
+    uint256 _minimumContribution,
     address _token,
     address _contributions
   )
@@ -20,6 +21,7 @@ contract ForkCrowdsale is DefaultCrowdsale {
     _rate,
     _wallet,
     _tokenCap,
+    _minimumContribution,
     _token,
     _contributions
   )

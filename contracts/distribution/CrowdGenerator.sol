@@ -14,6 +14,7 @@ contract CrowdGenerator is TokenRecover {
   uint256 public tokenCap;
   address public token;
   address public contributions;
+  uint256 public minimumContribution;
 
   address[] public crowdsaleList;
 
@@ -26,6 +27,7 @@ contract CrowdGenerator is TokenRecover {
     uint256 _rate,
     address _wallet,
     uint256 _tokenCap,
+    uint256 _minimumContribution,
     address _token,
     address _contributions,
     uint256[] _bonusRanges,
@@ -50,6 +52,7 @@ contract CrowdGenerator is TokenRecover {
     wallet = _wallet;
     tokenCap = _tokenCap;
     token = _token;
+    minimumContribution = _minimumContribution;
     contributions = _contributions;
     bonusRanges = _bonusRanges;
     bonusValues = _bonusValues;
@@ -63,6 +66,7 @@ contract CrowdGenerator is TokenRecover {
         rate,
         wallet,
         tokenCap,
+        minimumContribution,
         token,
         contributions
       );

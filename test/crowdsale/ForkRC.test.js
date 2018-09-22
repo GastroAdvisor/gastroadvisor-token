@@ -2,6 +2,7 @@ const { advanceBlock } = require('../helpers/advanceToBlock');
 const { duration } = require('../helpers/increaseTime');
 const { latestTime } = require('../helpers/latestTime');
 const { assertRevert } = require('../helpers/assertRevert');
+const { ether } = require('../helpers/ether');
 
 const { shouldBehaveLikeIncreasingBonusCrowdsale } = require('./base/IncreasingBonusCrowdsale.behaviour');
 
@@ -23,6 +24,7 @@ contract('ForkRC', function ([owner, investor, wallet, purchaser, thirdParty]) {
   const rate = new BigNumber(100);
   const tokenDecimals = 18;
   const tokenCap = (new BigNumber(1000)).mul(Math.pow(10, tokenDecimals));
+  const minimumContribution = ether(0.2);
 
   before(async function () {
     // Advance to the next block to correctly read time in the solidity "now" function interpreted by testrpc
@@ -42,6 +44,7 @@ contract('ForkRC', function ([owner, investor, wallet, purchaser, thirdParty]) {
       rate,
       wallet,
       tokenCap,
+      minimumContribution,
       this.token.address,
       this.contributions.address
     );
@@ -74,6 +77,7 @@ contract('ForkRC', function ([owner, investor, wallet, purchaser, thirdParty]) {
             0,
             wallet,
             tokenCap,
+            minimumContribution,
             this.token.address,
             this.contributions.address
           )
@@ -89,6 +93,7 @@ contract('ForkRC', function ([owner, investor, wallet, purchaser, thirdParty]) {
             ZERO_ADDRESS,
             tokenCap,
             this.token.address,
+            minimumContribution,
             this.contributions.address
           )
         );
@@ -102,6 +107,7 @@ contract('ForkRC', function ([owner, investor, wallet, purchaser, thirdParty]) {
             rate,
             wallet,
             tokenCap,
+            minimumContribution,
             ZERO_ADDRESS,
             this.contributions.address
           )
@@ -116,6 +122,7 @@ contract('ForkRC', function ([owner, investor, wallet, purchaser, thirdParty]) {
             rate,
             wallet,
             tokenCap,
+            minimumContribution,
             this.token.address,
             this.contributions.address
           )
@@ -130,6 +137,7 @@ contract('ForkRC', function ([owner, investor, wallet, purchaser, thirdParty]) {
             rate,
             wallet,
             tokenCap,
+            minimumContribution,
             this.token.address,
             this.contributions.address
           )
@@ -144,6 +152,7 @@ contract('ForkRC', function ([owner, investor, wallet, purchaser, thirdParty]) {
             rate,
             wallet,
             tokenCap,
+            minimumContribution,
             this.token.address,
             ZERO_ADDRESS
           )
@@ -158,6 +167,7 @@ contract('ForkRC', function ([owner, investor, wallet, purchaser, thirdParty]) {
             rate,
             wallet,
             0,
+            minimumContribution,
             this.token.address,
             this.contributions.address
           )

@@ -21,7 +21,7 @@ function shouldBehaveLikeIncreasingBonusCrowdsale ([owner, investor, wallet, pur
       ether(1),
       ether(0.6),
       ether(0.3),
-      ether(0),
+      ether(0.2), // minimum contribution
     ];
 
     const bonusValues = [
@@ -109,52 +109,6 @@ function shouldBehaveLikeIncreasingBonusCrowdsale ([owner, investor, wallet, pur
             );
           });
         });
-
-        describe('high-level purchase', function () {
-          beforeEach(async function () {
-            await this.crowdsale.setBonusRates(bonusRanges, bonusValues, { from: owner });
-            await increaseTimeTo(this.openingTime);
-          });
-
-          it('should log purchase', async function () {
-            for (let i = 0; i < bonusRanges.length; i++) {
-              const value = bonusRanges[i] > 0 ? bonusRanges[i] : ether(0.1); // lower range
-              const normalAmount = value.mul(rate);
-              const bonusAmount = normalAmount.mul(bonusValues[i]).div(100);
-              const expectedTokenAmount = normalAmount.add(bonusAmount);
-              const { logs } = await this.crowdsale.sendTransaction({ value: value, from: investor });
-              const event = logs.find(e => e.event === 'TokenPurchase');
-              should.exist(event);
-              event.args.purchaser.should.equal(investor);
-              event.args.beneficiary.should.equal(investor);
-              event.args.value.should.be.bignumber.equal(value);
-              event.args.amount.should.be.bignumber.equal(expectedTokenAmount);
-            }
-          });
-        });
-
-        describe('low-level purchase', function () {
-          beforeEach(async function () {
-            await this.crowdsale.setBonusRates(bonusRanges, bonusValues, { from: owner });
-            await increaseTimeTo(this.openingTime);
-          });
-
-          it('should log purchase', async function () {
-            for (let i = 0; i < bonusRanges.length; i++) {
-              const value = bonusRanges[i] > 0 ? bonusRanges[i] : ether(0.1); // lower range
-              const normalAmount = value.mul(rate);
-              const bonusAmount = normalAmount.mul(bonusValues[i]).div(100);
-              const expectedTokenAmount = normalAmount.add(bonusAmount);
-              const { logs } = await this.crowdsale.buyTokens(investor, { value: value, from: purchaser });
-              const event = logs.find(e => e.event === 'TokenPurchase');
-              should.exist(event);
-              event.args.purchaser.should.equal(purchaser);
-              event.args.beneficiary.should.equal(investor);
-              event.args.value.should.be.bignumber.equal(value);
-              event.args.amount.should.be.bignumber.equal(expectedTokenAmount);
-            }
-          });
-        });
       });
 
       describe('if third party is calling', function () {
@@ -168,13 +122,47 @@ function shouldBehaveLikeIncreasingBonusCrowdsale ([owner, investor, wallet, pur
 
     describe('high-level purchase', function () {
       beforeEach(async function () {
+        await this.crowdsale.setBonusRates(bonusRanges, bonusValues, { from: owner });
         await increaseTimeTo(this.openingTime);
+      });
+
+      it('should log purchase', async function () {
+        for (let i = 0; i < bonusRanges.length; i++) {
+          const value = bonusRanges[i];
+          const normalAmount = value.mul(rate);
+          const bonusAmount = normalAmount.mul(bonusValues[i]).div(100);
+          const expectedTokenAmount = normalAmount.add(bonusAmount);
+          const { logs } = await this.crowdsale.sendTransaction({ value: value, from: investor });
+          const event = logs.find(e => e.event === 'TokenPurchase');
+          should.exist(event);
+          event.args.purchaser.should.equal(investor);
+          event.args.beneficiary.should.equal(investor);
+          event.args.value.should.be.bignumber.equal(value);
+          event.args.amount.should.be.bignumber.equal(expectedTokenAmount);
+        }
       });
     });
 
     describe('low-level purchase', function () {
       beforeEach(async function () {
+        await this.crowdsale.setBonusRates(bonusRanges, bonusValues, { from: owner });
         await increaseTimeTo(this.openingTime);
+      });
+
+      it('should log purchase', async function () {
+        for (let i = 0; i < bonusRanges.length; i++) {
+          const value = bonusRanges[i];
+          const normalAmount = value.mul(rate);
+          const bonusAmount = normalAmount.mul(bonusValues[i]).div(100);
+          const expectedTokenAmount = normalAmount.add(bonusAmount);
+          const { logs } = await this.crowdsale.buyTokens(investor, { value: value, from: purchaser });
+          const event = logs.find(e => e.event === 'TokenPurchase');
+          should.exist(event);
+          event.args.purchaser.should.equal(purchaser);
+          event.args.beneficiary.should.equal(investor);
+          event.args.value.should.be.bignumber.equal(value);
+          event.args.amount.should.be.bignumber.equal(expectedTokenAmount);
+        }
       });
     });
   });
