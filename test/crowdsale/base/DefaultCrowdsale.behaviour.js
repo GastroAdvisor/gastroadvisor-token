@@ -89,8 +89,8 @@ function shouldBehaveLikeDefaultCrowdsale ([owner, investor, wallet, purchaser, 
       it('should fail if less than minimum contribution', async function () {
         await assertRevert(
           this.crowdsale.sendTransaction({ value: minContribution.sub(1), from: investor })
-        )
-      })
+        );
+      });
     });
 
     describe('low-level purchase', function () {
@@ -140,8 +140,8 @@ function shouldBehaveLikeDefaultCrowdsale ([owner, investor, wallet, purchaser, 
       it('should fail if less than minimum contribution', async function () {
         await assertRevert(
           this.crowdsale.buyTokens(investor, { value: minContribution.sub(1), from: purchaser })
-        )
-      })
+        );
+      });
     });
 
     context('check statuses', function () {
