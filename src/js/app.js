@@ -46,6 +46,15 @@ App = {
       App.contracts.CrowdGenerator.setProvider(App.web3Provider);
     });
 
+
+    $.getJSON('ForkRC.json', function (data) {
+      // Get the necessary contract artifact file and instantiate it with truffle-contract.
+      App.contracts.ForkRC = TruffleContract(data);
+
+      // Set the provider for our contract.
+      App.contracts.ForkRC.setProvider(App.web3Provider);
+    });
+
     $.getJSON('ForkCrowdsale.json', function (data) {
       // Get the necessary contract artifact file and instantiate it with truffle-contract.
       App.contracts.ForkCrowdsale = TruffleContract(data);
