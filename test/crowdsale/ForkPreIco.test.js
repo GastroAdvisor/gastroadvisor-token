@@ -13,14 +13,14 @@ require('chai')
   .use(require('chai-bignumber')(BigNumber))
   .should();
 
-const ForkCrowdsale = artifacts.require('ForkCrowdsale');
+const ForkPreIco = artifacts.require('ForkPreIco');
 const GastroAdvisorToken = artifacts.require('GastroAdvisorToken');
 const Contributions = artifacts.require('Contributions');
 
 const ROLE_MINTER = 'minter';
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
-contract('ForkCrowdsale', function ([owner, investor, wallet, purchaser, thirdParty]) {
+contract('ForkPreIco', function ([owner, investor, wallet, purchaser, thirdParty]) {
   const rate = new BigNumber(10);
   const tokenDecimals = 18;
   const tokenCap = (new BigNumber(100)).mul(Math.pow(10, tokenDecimals));
@@ -38,7 +38,7 @@ contract('ForkCrowdsale', function ([owner, investor, wallet, purchaser, thirdPa
 
     this.token = await GastroAdvisorToken.new();
     this.contributions = await Contributions.new();
-    this.crowdsale = await ForkCrowdsale.new(
+    this.crowdsale = await ForkPreIco.new(
       this.openingTime,
       this.closingTime,
       rate,
@@ -57,7 +57,7 @@ contract('ForkCrowdsale', function ([owner, investor, wallet, purchaser, thirdPa
     shouldBehaveLikeDefaultCrowdsale([owner, investor, wallet, purchaser, thirdParty], rate);
   });
 
-  context('like a ForkCrowdsale', function () {
+  context('like a ForkPreIco', function () {
     describe('creating a valid crowdsale', function () {
       it('should be token minter', async function () {
         const isMinter = await this.token.hasRole(this.crowdsale.address, ROLE_MINTER);
@@ -71,7 +71,7 @@ contract('ForkCrowdsale', function ([owner, investor, wallet, purchaser, thirdPa
 
       it('should fail with zero rate', async function () {
         await assertRevert(
-          ForkCrowdsale.new(
+          ForkPreIco.new(
             this.openingTime,
             this.closingTime,
             0,
@@ -86,7 +86,7 @@ contract('ForkCrowdsale', function ([owner, investor, wallet, purchaser, thirdPa
 
       it('should fail if wallet is the zero address', async function () {
         await assertRevert(
-          ForkCrowdsale.new(
+          ForkPreIco.new(
             this.openingTime,
             this.closingTime,
             rate,
@@ -101,7 +101,7 @@ contract('ForkCrowdsale', function ([owner, investor, wallet, purchaser, thirdPa
 
       it('should fail if token is the zero address', async function () {
         await assertRevert(
-          ForkCrowdsale.new(
+          ForkPreIco.new(
             this.openingTime,
             this.closingTime,
             rate,
@@ -116,7 +116,7 @@ contract('ForkCrowdsale', function ([owner, investor, wallet, purchaser, thirdPa
 
       it('should fail if opening time is in the past', async function () {
         await assertRevert(
-          ForkCrowdsale.new(
+          ForkPreIco.new(
             (await latestTime()) - duration.seconds(1),
             this.closingTime,
             rate,
@@ -131,7 +131,7 @@ contract('ForkCrowdsale', function ([owner, investor, wallet, purchaser, thirdPa
 
       it('should fail if opening time is after closing time in the past', async function () {
         await assertRevert(
-          ForkCrowdsale.new(
+          ForkPreIco.new(
             this.closingTime,
             this.openingTime,
             rate,
@@ -146,7 +146,7 @@ contract('ForkCrowdsale', function ([owner, investor, wallet, purchaser, thirdPa
 
       it('should fail if contributions is the zero address', async function () {
         await assertRevert(
-          ForkCrowdsale.new(
+          ForkPreIco.new(
             this.openingTime,
             this.closingTime,
             rate,
@@ -161,7 +161,7 @@ contract('ForkCrowdsale', function ([owner, investor, wallet, purchaser, thirdPa
 
       it('should fail with zero tokenCap', async function () {
         await assertRevert(
-          ForkCrowdsale.new(
+          ForkPreIco.new(
             this.openingTime,
             this.closingTime,
             rate,

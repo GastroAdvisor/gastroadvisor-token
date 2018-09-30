@@ -13,7 +13,7 @@ require('chai')
   .use(require('chai-bignumber')(BigNumber))
   .should();
 
-const ForkCrowdsale = artifacts.require('ForkCrowdsale');
+const ForkPreIco = artifacts.require('ForkPreIco');
 const CrowdGenerator = artifacts.require('CrowdGenerator');
 const GastroAdvisorToken = artifacts.require('GastroAdvisorToken');
 const Contributions = artifacts.require('Contributions');
@@ -281,7 +281,7 @@ contract('CrowdGenerator', function ([owner, wallet, thirdParty]) {
         await this.generator.startCrowdsales(1, { from: owner });
 
         const crowdsaleAddress = await this.generator.crowdsaleList(0);
-        const crowdsale = ForkCrowdsale.at(crowdsaleAddress);
+        const crowdsale = ForkPreIco.at(crowdsaleAddress);
         (await crowdsale.owner()).should.be.equal(owner);
       });
 
@@ -289,7 +289,7 @@ contract('CrowdGenerator', function ([owner, wallet, thirdParty]) {
         await this.generator.startCrowdsales(1, { from: owner });
 
         const crowdsaleAddress = await this.generator.crowdsaleList(0);
-        const crowdsale = ForkCrowdsale.at(crowdsaleAddress);
+        const crowdsale = ForkPreIco.at(crowdsaleAddress);
 
         (await crowdsale.started()).should.be.equal(true);
         (await crowdsale.closingTime()).should.be.bignumber.equal(this.closingTime);

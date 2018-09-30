@@ -55,12 +55,12 @@ App = {
       App.contracts.ForkRC.setProvider(App.web3Provider);
     });
 
-    $.getJSON('ForkCrowdsale.json', function (data) {
+    $.getJSON('ForkPreIco.json', function (data) {
       // Get the necessary contract artifact file and instantiate it with truffle-contract.
-      App.contracts.ForkCrowdsale = TruffleContract(data);
+      App.contracts.ForkPreIco = TruffleContract(data);
 
       // Set the provider for our contract.
-      App.contracts.ForkCrowdsale.setProvider(App.web3Provider);
+      App.contracts.ForkPreIco.setProvider(App.web3Provider);
     });
 
     $.getJSON('CappedBountyMinter.json', function (data) {

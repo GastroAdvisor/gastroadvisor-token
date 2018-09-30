@@ -3,7 +3,7 @@ pragma solidity ^0.4.24;
 import "./base/DefaultCrowdsale.sol";
 
 
-contract ForkCrowdsale is DefaultCrowdsale {
+contract ForkPreIco is DefaultCrowdsale {
 
   constructor(
     uint256 _startTime,
