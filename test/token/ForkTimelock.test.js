@@ -1,6 +1,6 @@
-const { latestTime } = require('../helpers/latestTime');
-const { duration } = require('../helpers/increaseTime');
-const { advanceBlock } = require('../helpers/advanceToBlock');
+const { latestTime } = require('openzeppelin-solidity/test/helpers/latestTime');
+const { duration } = require('openzeppelin-solidity/test/helpers/increaseTime');
+const { advanceBlock } = require('openzeppelin-solidity/test/helpers/advanceToBlock');
 
 const { shouldBehaveLikeTokenTimelock } = require('./ERC20/TokenTimelock.behaviour');
 

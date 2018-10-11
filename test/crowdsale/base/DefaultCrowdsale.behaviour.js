@@ -1,11 +1,11 @@
-const { ether } = require('../../helpers/ether');
-const { increaseTimeTo } = require('../../helpers/increaseTime');
-const { assertRevert } = require('../../helpers/assertRevert');
+const { ether } = require('openzeppelin-solidity/test/helpers/ether');
+const { increaseTimeTo } = require('openzeppelin-solidity/test/helpers/increaseTime');
+const { assertRevert } = require('openzeppelin-solidity/test/helpers/assertRevert');
 
 const { shouldBehaveLikeMintedCrowdsale } = require('./MintedCrowdsale.behaviour');
 const { shouldBehaveLikeTimedCrowdsale } = require('./TimedCrowdsale.behaviour');
 const { shouldBehaveLikeTokenCappedCrowdsale } = require('./TokenCappedCrowdsale.behaviour');
-const { shouldBehaveLikeTokenRecover } = require('../../safe/TokenRecover.behaviour');
+const { shouldBehaveLikeTokenRecover } = require('eth-token-recover/test/TokenRecover.behaviour');
 
 const BigNumber = web3.BigNumber;
 

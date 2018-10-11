@@ -2,7 +2,7 @@ pragma solidity ^0.4.24;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/MintableToken.sol";
-import "../safe/TokenRecover.sol";
+import "eth-token-recover/contracts/TokenRecover.sol";
 
 
 contract CappedBountyMinter is TokenRecover {

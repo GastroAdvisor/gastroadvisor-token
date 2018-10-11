@@ -1,8 +1,8 @@
-const { advanceBlock } = require('../helpers/advanceToBlock');
-const { duration } = require('../helpers/increaseTime');
-const { latestTime } = require('../helpers/latestTime');
-const { assertRevert } = require('../helpers/assertRevert');
-const { ether } = require('../helpers/ether');
+const { advanceBlock } = require('openzeppelin-solidity/test/helpers/advanceToBlock');
+const { duration } = require('openzeppelin-solidity/test/helpers/increaseTime');
+const { latestTime } = require('openzeppelin-solidity/test/helpers/latestTime');
+const { assertRevert } = require('openzeppelin-solidity/test/helpers/assertRevert');
+const { ether } = require('openzeppelin-solidity/test/helpers/ether');
 
 const { shouldBehaveLikeDefaultCrowdsale } = require('./base/DefaultCrowdsale.behaviour');
 

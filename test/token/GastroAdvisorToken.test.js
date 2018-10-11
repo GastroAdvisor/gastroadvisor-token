@@ -1,13 +1,14 @@
-const { assertRevert } = require('../helpers/assertRevert');
-const { sendTransaction } = require('../helpers/sendTransaction');
+const { assertRevert } = require('openzeppelin-solidity/test/helpers/assertRevert');
+const { sendTransaction } = require('openzeppelin-solidity/test/helpers/sendTransaction');
+
+const { shouldBehaveLikeERC1363BasicToken } = require('erc-payable-token/test/token/ERC1363/ERC1363BasicToken.behaviour'); // eslint-disable-line max-len
+const { shouldBehaveLikeMintableToken } = require('openzeppelin-solidity/test/token/ERC20/MintableToken.behaviour');
+const { shouldBehaveLikeRBACMintableToken } = require('openzeppelin-solidity/test/token/ERC20/RBACMintableToken.behaviour'); // eslint-disable-line max-len
+const { shouldBehaveLikeBurnableToken } = require('openzeppelin-solidity/test/token/ERC20/BurnableToken.behaviour');
+const { shouldBehaveLikeTokenRecover } = require('eth-token-recover/test/TokenRecover.behaviour');
 
 const { shouldBehaveLikeDetailedERC20Token } = require('./ERC20/DetailedERC20.behaviour');
-const { shouldBehaveLikeMintableToken } = require('./ERC20/MintableToken.behaviour');
-const { shouldBehaveLikeRBACMintableToken } = require('./ERC20/RBACMintableToken.behaviour');
-const { shouldBehaveLikeBurnableToken } = require('./ERC20/BurnableToken.behaviour');
 const { shouldBehaveLikeStandardToken } = require('./ERC20/StandardToken.behaviour');
-const { shouldBehaveLikeERC1363BasicToken } = require('./ERC1363/ERC1363BasicToken.behaviour');
-const { shouldBehaveLikeTokenRecover } = require('../safe/TokenRecover.behaviour');
 const { shouldBehaveLikeRBAC } = require('../access/RBAC.behaviour');
 
 const BigNumber = web3.BigNumber;

@@ -1,6 +1,6 @@
-const { ether } = require('../../helpers/ether');
-const { increaseTimeTo } = require('../../helpers/increaseTime');
-const { assertRevert } = require('../../helpers/assertRevert');
+const { ether } = require('openzeppelin-solidity/test/helpers/ether');
+const { increaseTimeTo } = require('openzeppelin-solidity/test/helpers/increaseTime');
+const { assertRevert } = require('openzeppelin-solidity/test/helpers/assertRevert');
 
 const { shouldBehaveLikeDefaultCrowdsale } = require('./DefaultCrowdsale.behaviour');
 

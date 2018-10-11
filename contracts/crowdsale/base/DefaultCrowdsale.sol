@@ -1,9 +1,9 @@
 pragma solidity ^0.4.24;
 
+import "eth-token-recover/contracts/TokenRecover.sol";
 import "openzeppelin-solidity/contracts/crowdsale/validation/TimedCrowdsale.sol"; // solium-disable-line max-len
 import "openzeppelin-solidity/contracts/crowdsale/emission/MintedCrowdsale.sol"; // solium-disable-line max-len
 import "./TokenCappedCrowdsale.sol";
-import "../../safe/TokenRecover.sol";
 import "../utils/Contributions.sol";
 
 
@@ -47,7 +47,7 @@ contract DefaultCrowdsale is TimedCrowdsale, MintedCrowdsale, TokenCappedCrowdsa
 
 
   /**
-   * @dev Extend parent behavior requiring purchase to respect the tokenCap.
+   * @dev Extend parent behavior requiring purchase to respect the minimumContribution.
    * @param _beneficiary Token purchaser
    * @param _weiAmount Amount of wei contributed
    */

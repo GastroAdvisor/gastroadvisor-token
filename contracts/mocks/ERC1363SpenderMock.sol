@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-import "../token/ERC1363/ERC1363Spender.sol";
+import "erc-payable-token/contracts/token/ERC1363/ERC1363Spender.sol";
 
 
 // mock class using ERC1363Spender
@@ -28,6 +28,7 @@ contract ERC1363SpenderMock is ERC1363Spender {
     external
     returns (bytes4)
   {
+    // solium-disable-next-line error-reason
     require(!reverts);
     emit Approved(
       _owner,

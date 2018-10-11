@@ -1,5 +1,5 @@
-const { ether } = require('../../helpers/ether');
-const { assertRevert } = require('../../helpers/assertRevert');
+const { ether } = require('openzeppelin-solidity/test/helpers/ether');
+const { assertRevert } = require('openzeppelin-solidity/test/helpers/assertRevert');
 
 const { shouldBehaveLikeRBAC } = require('../../access/RBAC.behaviour');
 

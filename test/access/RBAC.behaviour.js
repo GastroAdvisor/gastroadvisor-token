@@ -1,5 +1,5 @@
-const expectEvent = require('../helpers/expectEvent');
-const { assertRevert } = require('../helpers/assertRevert');
+const expectEvent = require('openzeppelin-solidity/test/helpers/expectEvent');
+const { assertRevert } = require('openzeppelin-solidity/test/helpers/assertRevert');
 
 require('chai')
   .use(require('chai-as-promised'))
