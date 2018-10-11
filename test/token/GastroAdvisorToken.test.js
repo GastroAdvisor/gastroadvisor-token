@@ -1,4 +1,6 @@
-const { shouldBehaveLikeDefaultToken } = require('./base/DefaultToken.behaviour');
+const { assertRevert } = require('openzeppelin-solidity/test/helpers/assertRevert');
+
+const { shouldBehaveLikeBaseToken } = require('./base/BaseToken.behaviour');
 
 const BigNumber = web3.BigNumber;
 
@@ -20,14 +22,28 @@ contract('GastroAdvisorToken', function (
     this.token = await GastroAdvisorToken.new({ from: owner });
   });
 
-  context('like a DefaultToken', function () {
-    shouldBehaveLikeDefaultToken(
+  context('like a BaseToken', function () {
+    shouldBehaveLikeBaseToken(
       [owner, anotherAccount, minter, recipient, futureMinter, anotherFutureMinter, thirdParty],
       [_name, _symbol, _decimals]
     );
   });
 
-  context('like a GastroAdvisor token', function () {
+  context('like a GastroAdvisorToken behaviours', function () {
+    const initialBalance = 1000;
 
+    beforeEach(async function () {
+      await this.token.addMinter(minter, { from: owner });
+      await this.token.mint(owner, initialBalance, { from: minter });
+    });
+
+    it('should fail transfer before finish minting', async function () {
+      await assertRevert(this.token.transfer(owner, initialBalance, { from: owner }));
+    });
+
+    it('should fail transferFrom before finish minting', async function () {
+      await this.token.approve(anotherAccount, initialBalance, { from: owner });
+      await assertRevert(this.token.transferFrom(owner, recipient, initialBalance, { from: anotherAccount }));
+    });
   });
 });

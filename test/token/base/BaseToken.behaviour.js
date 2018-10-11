@@ -20,7 +20,7 @@ require('chai')
 
 const ERC1363Receiver = artifacts.require('ERC1363ReceiverMock.sol');
 
-function shouldBehaveLikeDefaultToken (
+function shouldBehaveLikeBaseToken (
   [owner, anotherAccount, minter, recipient, futureMinter, anotherFutureMinter, thirdParty],
   [_name, _symbol, _decimals]
 ) {
@@ -154,24 +154,6 @@ function shouldBehaveLikeDefaultToken (
     });
   });
 
-  context('DefaultToken behaviours', function () {
-    const initialBalance = 1000;
-
-    beforeEach(async function () {
-      await this.token.addMinter(minter, { from: owner });
-      await this.token.mint(owner, initialBalance, { from: minter });
-    });
-
-    it('should fail transfer before finish minting', async function () {
-      await assertRevert(this.token.transfer(owner, initialBalance, { from: owner }));
-    });
-
-    it('should fail transferFrom before finish minting', async function () {
-      await this.token.approve(anotherAccount, initialBalance, { from: owner });
-      await assertRevert(this.token.transferFrom(owner, recipient, initialBalance, { from: anotherAccount }));
-    });
-  });
-
   context('like a RBAC', function () {
     beforeEach(async function () {
       this.instance = this.token;
@@ -190,5 +172,5 @@ function shouldBehaveLikeDefaultToken (
 }
 
 module.exports = {
-  shouldBehaveLikeDefaultToken,
+  shouldBehaveLikeBaseToken,
 };
