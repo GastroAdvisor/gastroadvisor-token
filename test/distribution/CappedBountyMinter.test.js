@@ -1,4 +1,6 @@
 const { assertRevert } = require('openzeppelin-solidity/test/helpers/assertRevert');
+const { duration } = require('openzeppelin-solidity/test/helpers/increaseTime');
+const { latestTime } = require('openzeppelin-solidity/test/helpers/latestTime');
 
 const { shouldBehaveLikeTokenRecover } = require('eth-token-recover/test/TokenRecover.behaviour');
 
@@ -17,6 +19,10 @@ const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 contract('CappedBountyMinter', function (
   [tokenOwner, bountyOwner, anotherAccount, receiver1, receiver2, receiver3, thirdParty]
 ) {
+  const _name = 'GastroAdvisorToken';
+  const _symbol = 'FORK';
+  const _decimals = 18;
+
   const cap = new BigNumber(20000);
 
   const addresses = [receiver1, receiver2, receiver3];
@@ -27,7 +33,15 @@ contract('CappedBountyMinter', function (
   ];
 
   beforeEach(async function () {
-    this.token = await GastroAdvisorToken.new({ from: tokenOwner });
+    this.lockedUntil = (await latestTime()) + duration.weeks(1);
+
+    this.token = await GastroAdvisorToken.new(
+      _name,
+      _symbol,
+      _decimals,
+      this.lockedUntil,
+      { from: tokenOwner }
+    );
     this.decimals = await this.token.decimals();
     this.bounty = await CappedBountyMinter.new(this.token.address, cap, { from: bountyOwner });
     await this.token.addMinter(this.bounty.address, { from: tokenOwner });

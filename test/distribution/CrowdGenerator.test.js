@@ -21,6 +21,10 @@ const Contributions = artifacts.require('Contributions');
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 contract('CrowdGenerator', function ([owner, wallet, thirdParty]) {
+  const _name = 'GastroAdvisorToken';
+  const _symbol = 'FORK';
+  const _decimals = 18;
+
   const rate = new BigNumber(10);
   const tokenDecimals = 18;
   const tokenCap = (new BigNumber(100)).mul(Math.pow(10, tokenDecimals));
@@ -49,7 +53,15 @@ contract('CrowdGenerator', function ([owner, wallet, thirdParty]) {
     this.closingTime = (await latestTime()) + duration.weeks(1);
     this.afterClosingTime = this.closingTime + duration.seconds(1);
 
-    this.token = await GastroAdvisorToken.new();
+    this.lockedUntil = (await latestTime()) + duration.weeks(1);
+
+    this.token = await GastroAdvisorToken.new(
+      _name,
+      _symbol,
+      _decimals,
+      this.lockedUntil,
+      { from: owner }
+    );
     this.contributions = await Contributions.new();
 
     this.generator = await CrowdGenerator.new(

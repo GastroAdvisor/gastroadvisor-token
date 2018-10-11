@@ -21,6 +21,10 @@ const ROLE_MINTER = 'minter';
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 contract('ForkPreIco', function ([owner, investor, wallet, purchaser, thirdParty]) {
+  const _name = 'GastroAdvisorToken';
+  const _symbol = 'FORK';
+  const _decimals = 18;
+
   const rate = new BigNumber(10);
   const tokenDecimals = 18;
   const tokenCap = (new BigNumber(100)).mul(Math.pow(10, tokenDecimals));
@@ -36,7 +40,15 @@ contract('ForkPreIco', function ([owner, investor, wallet, purchaser, thirdParty
     this.closingTime = this.openingTime + duration.weeks(1);
     this.afterClosingTime = this.closingTime + duration.seconds(1);
 
-    this.token = await GastroAdvisorToken.new();
+    this.lockedUntil = (await latestTime()) + duration.weeks(1);
+
+    this.token = await GastroAdvisorToken.new(
+      _name,
+      _symbol,
+      _decimals,
+      this.lockedUntil,
+      { from: owner }
+    );
     this.contributions = await Contributions.new();
     this.crowdsale = await ForkPreIco.new(
       this.openingTime,

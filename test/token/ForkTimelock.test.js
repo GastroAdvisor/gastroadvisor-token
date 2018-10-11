@@ -15,6 +15,10 @@ const GastroAdvisorToken = artifacts.require('GastroAdvisorToken');
 const ForkTimelock = artifacts.require('ForkTimelock');
 
 contract('ForkTimelock', function ([owner, beneficiary]) {
+  const _name = 'GastroAdvisorToken';
+  const _symbol = 'FORK';
+  const _decimals = 18;
+
   const amount = new BigNumber(100);
 
   before(async function () {
@@ -23,7 +27,15 @@ contract('ForkTimelock', function ([owner, beneficiary]) {
   });
 
   beforeEach(async function () {
-    this.token = await GastroAdvisorToken.new({ from: owner });
+    this.lockedUntil = (await latestTime()) + duration.weeks(1);
+
+    this.token = await GastroAdvisorToken.new(
+      _name,
+      _symbol,
+      _decimals,
+      this.lockedUntil,
+      { from: owner }
+    );
 
     this.releaseTime = (await latestTime()) + duration.years(1);
     this.timelock = await ForkTimelock.new(this.token.address, beneficiary, this.releaseTime);

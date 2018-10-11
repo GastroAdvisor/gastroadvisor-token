@@ -135,11 +135,11 @@ function shouldBehaveLikeBaseToken (
           };
 
           await assertRevert(
-            transferAndCallWithData.call(this, this.to, initialBalance, { from: anotherAccount })
+            transferAndCallWithData.call(this, this.to, initialBalance, { from: owner })
           );
 
           await assertRevert(
-            transferAndCallWithoutData.call(this, this.to, initialBalance, { from: anotherAccount })
+            transferAndCallWithoutData.call(this, this.to, initialBalance, { from: owner })
           );
         });
       });

@@ -8,22 +8,30 @@ contract GastroAdvisorToken is BaseToken {
   uint256 public lockedUntil;
   mapping(address => uint256) lockedBalances;
 
-  modifier canTransfer() {
+  modifier canTransfer(address _from, uint256 _value) {
     require(mintingFinished);
+    require(_value <= balances[_from].sub(lockedBalanceOf(_from)));
     _;
   }
 
-  constructor()
-  BaseToken("GastroAdvisorToken", "FORK", 18)
+  constructor(
+    string _name,
+    string _symbol,
+    uint8 _decimals,
+    uint256 _lockedUntil
+  )
+  BaseToken(_name, _symbol, _decimals)
   public
-  {}
+  {
+    lockedUntil = _lockedUntil;
+  }
 
   function transfer(
     address _to,
     uint256 _value
   )
   public
-  canTransfer
+  canTransfer(msg.sender, _value)
   returns (bool)
   {
     return super.transfer(_to, _value);
@@ -35,10 +43,39 @@ contract GastroAdvisorToken is BaseToken {
     uint256 _value
   )
   public
-  canTransfer
+  canTransfer(_from, _value)
   returns (bool)
   {
     return super.transferFrom(_from, _to, _value);
+  }
+
+  /**
+   * @dev Gets the locked balance of the specified address.
+   * @param _who The address to query the balance of.
+   * @return An uint256 representing the amount owned by the passed address.
+   */
+  function lockedBalanceOf(address _who) public view returns (uint256) {
+    // solium-disable-next-line security/no-block-members
+    return block.timestamp <= lockedUntil ? lockedBalances[_who] : 0;
+  }
+
+  /**
+   * @dev Function to mint and lock tokens
+   * @param _to The address that will receive the minted tokens.
+   * @param _amount The amount of tokens to mint.
+   * @return A boolean that indicates if the operation was successful.
+   */
+  function mintAndLock(
+    address _to,
+    uint256 _amount
+  )
+  public
+  hasMintPermission
+  canMint
+  returns (bool)
+  {
+    lockedBalances[_to] = lockedBalances[_to].add(_amount);
+    return super.mint(_to, _amount);
   }
 
   /**
