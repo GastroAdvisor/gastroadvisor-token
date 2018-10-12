@@ -4,6 +4,11 @@ import "./DefaultCrowdsale.sol";
 import "../utils/Contributions.sol";
 
 
+/**
+ * @title IncreasingBonusCrowdsale
+ * @author Vittorio Minacori (https://github.com/vittominacori)
+ * @dev DefaultCrowdsale with a variable bonus based on contribution amount
+ */
 contract IncreasingBonusCrowdsale is DefaultCrowdsale {
 
   uint256[] public bonusRanges;

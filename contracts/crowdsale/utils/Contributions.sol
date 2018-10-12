@@ -5,7 +5,13 @@ import "openzeppelin-solidity/contracts/access/rbac/RBAC.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 
+/**
+ * @title Contributions
+ * @author Vittorio Minacori (https://github.com/vittominacori)
+ * @dev Utility contract where to save any information about Crowdsales' contributions
+ */
 contract Contributions is RBAC, Ownable {
+
   using SafeMath for uint256;
 
   string public constant ROLE_MINTER = "minter";

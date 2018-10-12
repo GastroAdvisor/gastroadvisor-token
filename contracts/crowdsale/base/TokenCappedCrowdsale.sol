@@ -6,9 +6,11 @@ import "openzeppelin-solidity/contracts/crowdsale/Crowdsale.sol";
 
 /**
  * @title TokenCappedCrowdsale
- * @dev Crowdsale with a limit of total tokens to be sold
+ * @author Vittorio Minacori (https://github.com/vittominacori)
+ * @dev Crowdsale with a limited amount of tokens to be sold
  */
 contract TokenCappedCrowdsale is Crowdsale {
+
   using SafeMath for uint256;
 
   uint256 public tokenCap;
@@ -62,5 +64,4 @@ contract TokenCappedCrowdsale is Crowdsale {
     super._updatePurchasingState(_beneficiary, _weiAmount);
     soldTokens = soldTokens.add(_getTokenAmount(_weiAmount));
   }
-
 }

@@ -3,6 +3,11 @@ pragma solidity ^0.4.24;
 import "../crowdsale/ForkRC.sol";
 
 
+/**
+ * @title CrowdGenerator
+ * @author Vittorio Minacori (https://github.com/vittominacori)
+ * @dev Contract to generate a lot of RC
+ */
 contract CrowdGenerator is TokenRecover {
 
   uint256[] public bonusRanges;

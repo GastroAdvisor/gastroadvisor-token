@@ -3,12 +3,21 @@ pragma solidity ^0.4.24;
 import "./base/BaseToken.sol";
 
 
+/**
+ * @title GastroAdvisorToken
+ * @author Vittorio Minacori (https://github.com/vittominacori)
+ * @dev GastroAdvisorToken is an ERC20 token with a lot of stuffs. Extends from BaseToken
+ */
 contract GastroAdvisorToken is BaseToken {
 
   uint256 public lockedUntil;
   mapping(address => uint256) lockedBalances;
   string constant ROLE_OPERATOR = "operator";
 
+  /**
+   * @dev Tokens can be moved only after minting finished or if you are an approved operator.
+   *  Some tokens can be locked until a date. Nobody can move locked tokens before of this date.
+   */
   modifier canTransfer(address _from, uint256 _value) {
     require(mintingFinished || hasRole(_from, ROLE_OPERATOR));
     require(_value <= balances[_from].sub(lockedBalanceOf(_from)));

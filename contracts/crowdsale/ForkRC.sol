@@ -3,6 +3,11 @@ pragma solidity ^0.4.24;
 import "./base/IncreasingBonusCrowdsale.sol";
 
 
+/**
+ * @title ForkRC
+ * @author Vittorio Minacori (https://github.com/vittominacori)
+ * @dev Extends from IncreasingBonusCrowdsale
+ */
 contract ForkRC is IncreasingBonusCrowdsale {
 
   constructor(

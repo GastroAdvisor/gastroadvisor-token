@@ -5,7 +5,13 @@ import "openzeppelin-solidity/contracts/token/ERC20/MintableToken.sol";
 import "eth-token-recover/contracts/TokenRecover.sol";
 
 
+/**
+ * @title CappedBountyMinter
+ * @author Vittorio Minacori (https://github.com/vittominacori)
+ * @dev Contract to distribute bounty tokens
+ */
 contract CappedBountyMinter is TokenRecover {
+
   using SafeMath for uint256;
 
   ERC20 public token;

@@ -3,6 +3,11 @@ pragma solidity ^0.4.24;
 import "./base/DefaultCrowdsale.sol";
 
 
+/**
+ * @title ForkPreIco
+ * @author Vittorio Minacori (https://github.com/vittominacori)
+ * @dev Extends from DefaultCrowdsale
+ */
 contract ForkPreIco is DefaultCrowdsale {
 
   constructor(

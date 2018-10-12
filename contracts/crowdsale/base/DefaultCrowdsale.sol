@@ -7,6 +7,12 @@ import "./TokenCappedCrowdsale.sol";
 import "../utils/Contributions.sol";
 
 
+/**
+ * @title DefaultCrowdsale
+ * @author Vittorio Minacori (https://github.com/vittominacori)
+ * @dev Extends from Crowdsale with more stuffs like TimedCrowdsale, MintedCrowdsale, TokenCappedCrowdsale.
+ *  Base for any other Crowdsale contract
+ */
 contract DefaultCrowdsale is TimedCrowdsale, MintedCrowdsale, TokenCappedCrowdsale, TokenRecover { // solium-disable-line max-len
 
   Contributions public contributions;
@@ -44,7 +50,6 @@ contract DefaultCrowdsale is TimedCrowdsale, MintedCrowdsale, TokenCappedCrowdsa
   function ended() public view returns(bool) {
     return hasClosed() || tokenCapReached();
   }
-
 
   /**
    * @dev Extend parent behavior requiring purchase to respect the minimumContribution.
