@@ -16,6 +16,8 @@ require('chai')
 const GastroAdvisorToken = artifacts.require('GastroAdvisorToken');
 const ERC1363Receiver = artifacts.require('ERC1363ReceiverMock.sol');
 
+const RECEIVER_MAGIC_VALUE = '0x88a7ca5c';
+
 contract('GastroAdvisorToken', function (
   [
     owner,
@@ -199,6 +201,7 @@ contract('GastroAdvisorToken', function (
           beforeEach(async function () {
             await this.token.mint(owner, unlockedTokens, { from: minter });
           });
+
           it('should fail to transfer', async function () {
             await assertRevert(this.token.transfer(recipient, unlockedTokens, { from: owner }));
           });
@@ -206,6 +209,75 @@ contract('GastroAdvisorToken', function (
           it('should fail to transferFrom', async function () {
             await this.token.approve(anotherAccount, unlockedTokens, { from: owner });
             await assertRevert(this.token.transferFrom(owner, recipient, unlockedTokens, { from: anotherAccount }));
+          });
+
+          it('should fail to transferAndCall', async function () {
+            this.receiver = await ERC1363Receiver.new(RECEIVER_MAGIC_VALUE, false);
+
+            const transferAndCallWithData = function (to, value, opts) {
+              return sendTransaction(
+                this.token,
+                'transferAndCall',
+                'address,uint256,bytes',
+                [to, value, '0x42'],
+                opts
+              );
+            };
+
+            const transferAndCallWithoutData = function (to, value, opts) {
+              return sendTransaction(
+                this.token,
+                'transferAndCall',
+                'address,uint256',
+                [to, value],
+                opts
+              );
+            };
+
+            await assertRevert(
+              transferAndCallWithData.call(this, this.receiver.address, unlockedTokens, { from: owner })
+            );
+
+            await assertRevert(
+              transferAndCallWithoutData.call(this, this.receiver.address, unlockedTokens, { from: owner })
+            );
+          });
+
+          it('should fail to transferFromAndCall', async function () {
+            await this.token.approve(anotherAccount, unlockedTokens, { from: owner });
+            this.receiver = await ERC1363Receiver.new(RECEIVER_MAGIC_VALUE, false);
+
+            const transferFromAndCallWithData = function (from, to, value, opts) {
+              return sendTransaction(
+                this.token,
+                'transferFromAndCall',
+                'address,address,uint256,bytes',
+                [from, to, value, '0x42'],
+                opts
+              );
+            };
+
+            const transferFromAndCallWithoutData = function (from, to, value, opts) {
+              return sendTransaction(
+                this.token,
+                'transferFromAndCall',
+                'address,address,uint256',
+                [from, to, value],
+                opts
+              );
+            };
+
+            await assertRevert(
+              transferFromAndCallWithData.call(
+                this, owner, this.receiver.address, unlockedTokens, { from: anotherAccount }
+              )
+            );
+
+            await assertRevert(
+              transferFromAndCallWithoutData.call(
+                this, owner, this.receiver.address, unlockedTokens, { from: anotherAccount }
+              )
+            );
           });
         });
 
@@ -221,6 +293,75 @@ contract('GastroAdvisorToken', function (
           it('should fail to transferFrom', async function () {
             await this.token.approve(anotherAccount, lockedTokens, { from: owner });
             await assertRevert(this.token.transferFrom(owner, recipient, lockedTokens, { from: anotherAccount }));
+          });
+
+          it('should fail to transferAndCall', async function () {
+            this.receiver = await ERC1363Receiver.new(RECEIVER_MAGIC_VALUE, false);
+
+            const transferAndCallWithData = function (to, value, opts) {
+              return sendTransaction(
+                this.token,
+                'transferAndCall',
+                'address,uint256,bytes',
+                [to, value, '0x42'],
+                opts
+              );
+            };
+
+            const transferAndCallWithoutData = function (to, value, opts) {
+              return sendTransaction(
+                this.token,
+                'transferAndCall',
+                'address,uint256',
+                [to, value],
+                opts
+              );
+            };
+
+            await assertRevert(
+              transferAndCallWithData.call(this, this.receiver.address, lockedTokens, { from: owner })
+            );
+
+            await assertRevert(
+              transferAndCallWithoutData.call(this, this.receiver.address, lockedTokens, { from: owner })
+            );
+          });
+
+          it('should fail to transferFromAndCall', async function () {
+            await this.token.approve(anotherAccount, lockedTokens, { from: owner });
+            this.receiver = await ERC1363Receiver.new(RECEIVER_MAGIC_VALUE, false);
+
+            const transferFromAndCallWithData = function (from, to, value, opts) {
+              return sendTransaction(
+                this.token,
+                'transferFromAndCall',
+                'address,address,uint256,bytes',
+                [from, to, value, '0x42'],
+                opts
+              );
+            };
+
+            const transferFromAndCallWithoutData = function (from, to, value, opts) {
+              return sendTransaction(
+                this.token,
+                'transferFromAndCall',
+                'address,address,uint256',
+                [from, to, value],
+                opts
+              );
+            };
+
+            await assertRevert(
+              transferFromAndCallWithData.call(
+                this, owner, this.receiver.address, lockedTokens, { from: anotherAccount }
+              )
+            );
+
+            await assertRevert(
+              transferFromAndCallWithoutData.call(
+                this, owner, this.receiver.address, lockedTokens, { from: anotherAccount }
+              )
+            );
           });
         });
       });
@@ -232,13 +373,130 @@ contract('GastroAdvisorToken', function (
             await this.token.addOperators([owner], { from: owner });
           });
 
-          it('should transfer token amount', async function () {
+          it('transfers the unlocked amount', async function () {
             await this.token.transfer(recipient, unlockedTokens, { from: owner });
+
+            const senderLockedBalance = await this.token.lockedBalanceOf(owner);
+            const senderBalance = await this.token.balanceOf(owner);
+            senderBalance.should.be.bignumber.equal(senderLockedBalance);
+
+            const recipientBalance = await this.token.balanceOf(recipient);
+            recipientBalance.should.be.bignumber.equal(unlockedTokens);
           });
 
-          it('should transferFrom token amount', async function () {
+          it('transfers less than unlocked amount', async function () {
+            await this.token.transfer(recipient, unlockedTokens.sub(1), { from: owner });
+
+            const senderLockedBalance = await this.token.lockedBalanceOf(owner);
+            const senderBalance = await this.token.balanceOf(owner);
+            senderBalance.should.be.bignumber.equal(senderLockedBalance.add(1));
+
+            const recipientBalance = await this.token.balanceOf(recipient);
+            recipientBalance.should.be.bignumber.equal(unlockedTokens.sub(1));
+          });
+
+          it('should fail to transfer if more than unlocked amount', async function () {
+            await assertRevert(this.token.transfer(recipient, unlockedTokens.add(1), { from: owner }));
+          });
+
+          it('should fail to transferAndCall if more than unlocked amount', async function () {
+            this.receiver = await ERC1363Receiver.new(RECEIVER_MAGIC_VALUE, false);
+
+            const transferAndCallWithData = function (to, value, opts) {
+              return sendTransaction(
+                this.token,
+                'transferAndCall',
+                'address,uint256,bytes',
+                [to, value, '0x42'],
+                opts
+              );
+            };
+
+            const transferAndCallWithoutData = function (to, value, opts) {
+              return sendTransaction(
+                this.token,
+                'transferAndCall',
+                'address,uint256',
+                [to, value],
+                opts
+              );
+            };
+
+            await assertRevert(
+              transferAndCallWithData.call(this, this.receiver.address, unlockedTokens.add(1), { from: owner })
+            );
+
+            await assertRevert(
+              transferAndCallWithoutData.call(this, this.receiver.address, unlockedTokens.add(1), { from: owner })
+            );
+          });
+
+          it('transferFrom the unlocked amount', async function () {
             await this.token.approve(anotherAccount, unlockedTokens, { from: owner });
             await this.token.transferFrom(owner, recipient, unlockedTokens, { from: anotherAccount });
+
+            const senderLockedBalance = await this.token.lockedBalanceOf(owner);
+            const senderBalance = await this.token.balanceOf(owner);
+            senderBalance.should.be.bignumber.equal(senderLockedBalance);
+
+            const recipientBalance = await this.token.balanceOf(recipient);
+            recipientBalance.should.be.bignumber.equal(unlockedTokens);
+          });
+
+          it('transferFrom less than unlocked amount', async function () {
+            await this.token.approve(anotherAccount, unlockedTokens.sub(1), { from: owner });
+            await this.token.transferFrom(owner, recipient, unlockedTokens.sub(1), { from: anotherAccount });
+
+            const senderLockedBalance = await this.token.lockedBalanceOf(owner);
+            const senderBalance = await this.token.balanceOf(owner);
+            senderBalance.should.be.bignumber.equal(senderLockedBalance.add(1));
+
+            const recipientBalance = await this.token.balanceOf(recipient);
+            recipientBalance.should.be.bignumber.equal(unlockedTokens.sub(1));
+          });
+
+          it('should fail to transferFrom if more than unlocked amount', async function () {
+            await this.token.approve(anotherAccount, unlockedTokens.add(1), { from: owner });
+            await assertRevert(
+              this.token.transferFrom(owner, recipient, unlockedTokens.add(1), { from: anotherAccount })
+            );
+          });
+
+          it('should fail to transferFromAndCall if more than unlocked amount', async function () {
+            await this.token.approve(anotherAccount, unlockedTokens.add(1), { from: owner });
+            this.receiver = await ERC1363Receiver.new(RECEIVER_MAGIC_VALUE, false);
+
+            const transferFromAndCallWithData = function (from, to, value, opts) {
+              return sendTransaction(
+                this.token,
+                'transferFromAndCall',
+                'address,address,uint256,bytes',
+                [from, to, value, '0x42'],
+                opts
+              );
+            };
+
+            const transferFromAndCallWithoutData = function (from, to, value, opts) {
+              return sendTransaction(
+                this.token,
+                'transferFromAndCall',
+                'address,address,uint256',
+                [from, to, value],
+                opts
+              );
+            };
+
+            await assertRevert(
+              transferFromAndCallWithData.call(
+                this, owner, this.receiver.address, unlockedTokens.add(1), { from: anotherAccount }
+              )
+            );
+
+            await assertRevert(
+              transferFromAndCallWithoutData.call(
+                this, owner, this.receiver.address, unlockedTokens.add(1), { from: anotherAccount }
+              )
+            );
           });
         });
 
@@ -255,6 +513,75 @@ contract('GastroAdvisorToken', function (
           it('should fail to transferFrom', async function () {
             await this.token.approve(anotherAccount, lockedTokens, { from: owner });
             await assertRevert(this.token.transferFrom(owner, recipient, lockedTokens, { from: anotherAccount }));
+          });
+
+          it('should fail to transferAndCall', async function () {
+            this.receiver = await ERC1363Receiver.new(RECEIVER_MAGIC_VALUE, false);
+
+            const transferAndCallWithData = function (to, value, opts) {
+              return sendTransaction(
+                this.token,
+                'transferAndCall',
+                'address,uint256,bytes',
+                [to, value, '0x42'],
+                opts
+              );
+            };
+
+            const transferAndCallWithoutData = function (to, value, opts) {
+              return sendTransaction(
+                this.token,
+                'transferAndCall',
+                'address,uint256',
+                [to, value],
+                opts
+              );
+            };
+
+            await assertRevert(
+              transferAndCallWithData.call(this, this.receiver.address, lockedTokens, { from: owner })
+            );
+
+            await assertRevert(
+              transferAndCallWithoutData.call(this, this.receiver.address, lockedTokens, { from: owner })
+            );
+          });
+
+          it('should fail to transferFromAndCall', async function () {
+            await this.token.approve(anotherAccount, lockedTokens, { from: owner });
+            this.receiver = await ERC1363Receiver.new(RECEIVER_MAGIC_VALUE, false);
+
+            const transferFromAndCallWithData = function (from, to, value, opts) {
+              return sendTransaction(
+                this.token,
+                'transferFromAndCall',
+                'address,address,uint256,bytes',
+                [from, to, value, '0x42'],
+                opts
+              );
+            };
+
+            const transferFromAndCallWithoutData = function (from, to, value, opts) {
+              return sendTransaction(
+                this.token,
+                'transferFromAndCall',
+                'address,address,uint256',
+                [from, to, value],
+                opts
+              );
+            };
+
+            await assertRevert(
+              transferFromAndCallWithData.call(
+                this, owner, this.receiver.address, lockedTokens, { from: anotherAccount }
+              )
+            );
+
+            await assertRevert(
+              transferFromAndCallWithoutData.call(
+                this, owner, this.receiver.address, lockedTokens, { from: anotherAccount }
+              )
+            );
           });
         });
       });
@@ -325,6 +652,38 @@ contract('GastroAdvisorToken', function (
             await assertRevert(this.token.transfer(recipient, unlockedTokens.add(1), { from: owner }));
           });
 
+          it('should fail to transferAndCall if more than unlocked amount', async function () {
+            this.receiver = await ERC1363Receiver.new(RECEIVER_MAGIC_VALUE, false);
+
+            const transferAndCallWithData = function (to, value, opts) {
+              return sendTransaction(
+                this.token,
+                'transferAndCall',
+                'address,uint256,bytes',
+                [to, value, '0x42'],
+                opts
+              );
+            };
+
+            const transferAndCallWithoutData = function (to, value, opts) {
+              return sendTransaction(
+                this.token,
+                'transferAndCall',
+                'address,uint256',
+                [to, value],
+                opts
+              );
+            };
+
+            await assertRevert(
+              transferAndCallWithData.call(this, this.receiver.address, unlockedTokens.add(1), { from: owner })
+            );
+
+            await assertRevert(
+              transferAndCallWithoutData.call(this, this.receiver.address, unlockedTokens.add(1), { from: owner })
+            );
+          });
+
           it('transferFrom the unlocked amount', async function () {
             await this.token.approve(anotherAccount, unlockedTokens, { from: owner });
             await this.token.transferFrom(owner, recipient, unlockedTokens, { from: anotherAccount });
@@ -355,6 +714,43 @@ contract('GastroAdvisorToken', function (
               this.token.transferFrom(owner, recipient, unlockedTokens.add(1), { from: anotherAccount })
             );
           });
+
+          it('should fail to transferFromAndCall if more than unlocked amount', async function () {
+            await this.token.approve(anotherAccount, unlockedTokens.add(1), { from: owner });
+            this.receiver = await ERC1363Receiver.new(RECEIVER_MAGIC_VALUE, false);
+
+            const transferFromAndCallWithData = function (from, to, value, opts) {
+              return sendTransaction(
+                this.token,
+                'transferFromAndCall',
+                'address,address,uint256,bytes',
+                [from, to, value, '0x42'],
+                opts
+              );
+            };
+
+            const transferFromAndCallWithoutData = function (from, to, value, opts) {
+              return sendTransaction(
+                this.token,
+                'transferFromAndCall',
+                'address,address,uint256',
+                [from, to, value],
+                opts
+              );
+            };
+
+            await assertRevert(
+              transferFromAndCallWithData.call(
+                this, owner, this.receiver.address, unlockedTokens.add(1), { from: anotherAccount }
+              )
+            );
+
+            await assertRevert(
+              transferFromAndCallWithoutData.call(
+                this, owner, this.receiver.address, unlockedTokens.add(1), { from: anotherAccount }
+              )
+            );
+          });
         });
 
         describe('trying to transfer locked tokens', function () {
@@ -374,7 +770,6 @@ contract('GastroAdvisorToken', function (
           });
 
           it('should fail to transferAndCall', async function () {
-            const RECEIVER_MAGIC_VALUE = '0x88a7ca5c';
             this.receiver = await ERC1363Receiver.new(RECEIVER_MAGIC_VALUE, false);
 
             const transferAndCallWithData = function (to, value, opts) {
@@ -407,7 +802,6 @@ contract('GastroAdvisorToken', function (
           });
 
           it('should fail to transferFromAndCall', async function () {
-            const RECEIVER_MAGIC_VALUE = '0x88a7ca5c';
             this.receiver = await ERC1363Receiver.new(RECEIVER_MAGIC_VALUE, false);
             await this.token.approve(anotherAccount, lockedTokens, { from: owner });
 
