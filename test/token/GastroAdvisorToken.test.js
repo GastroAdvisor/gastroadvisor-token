@@ -1,3 +1,4 @@
+const expectEvent = require('openzeppelin-solidity/test/helpers/expectEvent');
 const { assertRevert } = require('openzeppelin-solidity/test/helpers/assertRevert');
 const { increaseTimeTo, duration } = require('openzeppelin-solidity/test/helpers/increaseTime');
 const { latestTime } = require('openzeppelin-solidity/test/helpers/latestTime');
@@ -16,7 +17,17 @@ const GastroAdvisorToken = artifacts.require('GastroAdvisorToken');
 const ERC1363Receiver = artifacts.require('ERC1363ReceiverMock.sol');
 
 contract('GastroAdvisorToken', function (
-  [owner, anotherAccount, minter, recipient, futureMinter, anotherFutureMinter, thirdParty]
+  [
+    owner,
+    anotherAccount,
+    minter,
+    recipient,
+    futureMinter,
+    anotherFutureMinter,
+    futureOperator,
+    anotherFutureOperator,
+    thirdParty,
+  ]
 ) {
   const _name = 'GastroAdvisorToken';
   const _symbol = 'FORK';
@@ -126,30 +137,125 @@ contract('GastroAdvisorToken', function (
     });
 
     describe('before finish minting', function () {
-      beforeEach(async function () {
-        await this.token.mintAndLock(owner, lockedTokens, { from: minter });
-        await this.token.mint(owner, unlockedTokens, { from: minter });
+      describe('trying to add operators', function () {
+        describe('in normal conditions', function () {
+          it('allows owner to add operators', async function () {
+            await this.token.addOperators(
+              [futureOperator, anotherFutureOperator],
+              { from: owner }
+            ).should.be.fulfilled;
+          });
+
+          it('allows owner to remove an operator', async function () {
+            await this.token.addOperators([futureOperator], { from: owner }).should.be.fulfilled;
+            await this.token.removeOperator(futureOperator, { from: owner }).should.be.fulfilled;
+          });
+
+          it('announces a RoleAdded event on addRole', async function () {
+            await expectEvent.inTransaction(
+              this.token.addOperators([futureOperator], { from: owner }),
+              'RoleAdded'
+            );
+          });
+
+          it('announces a RoleRemoved event on removeRole', async function () {
+            await expectEvent.inTransaction(
+              this.token.removeOperator(minter, { from: owner }),
+              'RoleRemoved'
+            );
+          });
+        });
+
+        describe('in adversarial conditions', function () {
+          it('does not allow owner to add an empty array of operators', async function () {
+            await assertRevert(
+              this.token.addOperators([], { from: owner })
+            );
+          });
+
+          it('does not allow "thirdParty" except owner to add operators', async function () {
+            await assertRevert(
+              this.token.addOperators([futureOperator, anotherFutureOperator], { from: minter })
+            );
+            await assertRevert(
+              this.token.addOperators([futureOperator, anotherFutureOperator], { from: thirdParty })
+            );
+          });
+
+          it('does not allow "thirdParty" except owner to remove an operator', async function () {
+            await this.token.addOperators([futureOperator], { from: owner }).should.be.fulfilled;
+            await assertRevert(
+              this.token.removeOperator(futureOperator, { from: minter })
+            );
+            await assertRevert(
+              this.token.removeOperator(futureOperator, { from: thirdParty })
+            );
+          });
+        });
       });
 
-      describe('trying to transfer unlocked tokens', function () {
-        it('should fail to transfer', async function () {
-          await assertRevert(this.token.transfer(recipient, unlockedTokens, { from: owner }));
+      describe('if it is not an operator', function () {
+        describe('trying to transfer unlocked tokens', function () {
+          beforeEach(async function () {
+            await this.token.mint(owner, unlockedTokens, { from: minter });
+          });
+          it('should fail to transfer', async function () {
+            await assertRevert(this.token.transfer(recipient, unlockedTokens, { from: owner }));
+          });
+
+          it('should fail to transferFrom', async function () {
+            await this.token.approve(anotherAccount, unlockedTokens, { from: owner });
+            await assertRevert(this.token.transferFrom(owner, recipient, unlockedTokens, { from: anotherAccount }));
+          });
         });
 
-        it('should fail to transferFrom', async function () {
-          await this.token.approve(anotherAccount, unlockedTokens, { from: owner });
-          await assertRevert(this.token.transferFrom(owner, recipient, unlockedTokens, { from: anotherAccount }));
+        describe('trying to transfer locked tokens', function () {
+          beforeEach(async function () {
+            await this.token.mintAndLock(owner, lockedTokens, { from: minter });
+          });
+
+          it('should fail to transfer', async function () {
+            await assertRevert(this.token.transfer(recipient, lockedTokens, { from: owner }));
+          });
+
+          it('should fail to transferFrom', async function () {
+            await this.token.approve(anotherAccount, lockedTokens, { from: owner });
+            await assertRevert(this.token.transferFrom(owner, recipient, lockedTokens, { from: anotherAccount }));
+          });
         });
       });
 
-      describe('trying to transfer locked tokens', function () {
-        it('should fail to transfer', async function () {
-          await assertRevert(this.token.transfer(recipient, unlockedTokens, { from: owner }));
+      describe('if it is an operator', function () {
+        describe('trying to transfer unlocked tokens', function () {
+          beforeEach(async function () {
+            await this.token.mint(owner, unlockedTokens, { from: minter });
+            await this.token.addOperators([owner], { from: owner });
+          });
+
+          it('should transfer token amount', async function () {
+            await this.token.transfer(recipient, unlockedTokens, { from: owner });
+          });
+
+          it('should transferFrom token amount', async function () {
+            await this.token.approve(anotherAccount, unlockedTokens, { from: owner });
+            await this.token.transferFrom(owner, recipient, unlockedTokens, { from: anotherAccount });
+          });
         });
 
-        it('should fail to transferFrom', async function () {
-          await this.token.approve(anotherAccount, lockedTokens, { from: owner });
-          await assertRevert(this.token.transferFrom(owner, recipient, lockedTokens, { from: anotherAccount }));
+        describe('trying to transfer locked tokens', function () {
+          beforeEach(async function () {
+            await this.token.mintAndLock(owner, lockedTokens, { from: minter });
+            await this.token.addOperators([owner], { from: owner });
+          });
+
+          it('should fail to transfer', async function () {
+            await assertRevert(this.token.transfer(recipient, lockedTokens, { from: owner }));
+          });
+
+          it('should fail to transferFrom', async function () {
+            await this.token.approve(anotherAccount, lockedTokens, { from: owner });
+            await assertRevert(this.token.transferFrom(owner, recipient, lockedTokens, { from: anotherAccount }));
+          });
         });
       });
     });
@@ -159,6 +265,31 @@ contract('GastroAdvisorToken', function (
         await this.token.mintAndLock(owner, lockedTokens, { from: minter });
         await this.token.mint(owner, unlockedTokens, { from: minter });
         await this.token.finishMinting({ from: owner });
+      });
+
+      describe('trying to add operators', function () {
+        describe('in normal conditions', function () {
+          it('reverts', async function () {
+            await assertRevert(
+              this.token.addOperators([futureOperator, anotherFutureOperator], { from: owner })
+            );
+          });
+        });
+
+        describe('in adversarial conditions', function () {
+          it('reverts', async function () {
+            await assertRevert(
+              this.token.addOperators([], { from: owner })
+            );
+
+            await assertRevert(
+              this.token.addOperators([futureOperator, anotherFutureOperator], { from: minter })
+            );
+            await assertRevert(
+              this.token.addOperators([futureOperator, anotherFutureOperator], { from: thirdParty })
+            );
+          });
+        });
       });
 
       context('before unlock time', function () {

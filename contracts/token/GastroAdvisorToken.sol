@@ -7,9 +7,10 @@ contract GastroAdvisorToken is BaseToken {
 
   uint256 public lockedUntil;
   mapping(address => uint256) lockedBalances;
+  string constant ROLE_OPERATOR = "operator";
 
   modifier canTransfer(address _from, uint256 _value) {
-    require(mintingFinished);
+    require(mintingFinished || hasRole(_from, ROLE_OPERATOR));
     require(_value <= balances[_from].sub(lockedBalanceOf(_from)));
     _;
   }
@@ -52,7 +53,7 @@ contract GastroAdvisorToken is BaseToken {
   /**
    * @dev Gets the locked balance of the specified address.
    * @param _who The address to query the balance of.
-   * @return An uint256 representing the amount owned by the passed address.
+   * @return An uint256 representing the locked amount owned by the passed address.
    */
   function lockedBalanceOf(address _who) public view returns (uint256) {
     // solium-disable-next-line security/no-block-members
@@ -76,6 +77,26 @@ contract GastroAdvisorToken is BaseToken {
   {
     lockedBalances[_to] = lockedBalances[_to].add(_amount);
     return super.mint(_to, _amount);
+  }
+
+  /**
+   * @dev add a operator role to an array of addresses
+   * @param _operators address[]
+   */
+  function addOperators(address[] _operators) public onlyOwner {
+    require(!mintingFinished);
+    require(_operators.length > 0);
+    for (uint i = 0; i < _operators.length; i++) {
+      addRole(_operators[i], ROLE_OPERATOR);
+    }
+  }
+
+  /**
+   * @dev remove a operator role from an address
+   * @param _operator address
+   */
+  function removeOperator(address _operator) public onlyOwner {
+    removeRole(_operator, ROLE_OPERATOR);
   }
 
   /**
