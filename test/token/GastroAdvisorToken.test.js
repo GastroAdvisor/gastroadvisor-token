@@ -294,6 +294,11 @@ contract('GastroAdvisorToken', function (
 
       context('before unlock time', function () {
         describe('trying to transfer unlocked tokens', function () {
+          beforeEach(async function () {
+            (await this.token.balanceOf(owner)).should.be.bignumber.equal(lockedTokens.add(unlockedTokens));
+            (await this.token.lockedBalanceOf(owner)).should.be.bignumber.equal(lockedTokens);
+          });
+
           it('transfers the unlocked amount', async function () {
             await this.token.transfer(recipient, unlockedTokens, { from: owner });
 
@@ -355,6 +360,8 @@ contract('GastroAdvisorToken', function (
         describe('trying to transfer locked tokens', function () {
           beforeEach(async function () {
             await this.token.transfer(recipient, unlockedTokens, { from: owner });
+            (await this.token.balanceOf(owner)).should.be.bignumber.equal(lockedTokens);
+            (await this.token.lockedBalanceOf(owner)).should.be.bignumber.equal(lockedTokens);
           });
 
           it('should fail to transfer', async function () {
@@ -444,6 +451,10 @@ contract('GastroAdvisorToken', function (
 
         beforeEach(async function () {
           await increaseTimeTo(this.afterLockedUntil);
+        });
+
+        it('balance should return locked and unlocked tokens', async function () {
+          (await this.token.balanceOf(owner)).should.be.bignumber.equal(amount);
         });
 
         it('locked balance should return zero', async function () {
