@@ -41,8 +41,8 @@ function shouldBehaveLikeTokenCappedCrowdsale ([investor, purchaser, thirdParty]
 
       it('should reject payments outside cap', async function () {
         await this.crowdsale.sendTransaction({ value: maxContribution, from: thirdParty }).should.be.fulfilled;
-        await this.crowdsale.sendTransaction({ value: maxContribution, from: investor }).should.be.fulfilled;
-        await assertRevert(this.crowdsale.sendTransaction({ value: 1, from: investor }));
+        await this.crowdsale.sendTransaction({ value: maxContribution.sub(1), from: investor }).should.be.fulfilled;
+        await assertRevert(this.crowdsale.sendTransaction({ value: maxContribution, from: investor }));
       });
     });
 
@@ -69,8 +69,8 @@ function shouldBehaveLikeTokenCappedCrowdsale ([investor, purchaser, thirdParty]
 
       it('should reject payments outside cap', async function () {
         await this.crowdsale.buyTokens(thirdParty, { value: maxContribution, from: purchaser });
-        await this.crowdsale.buyTokens(investor, { value: maxContribution, from: purchaser });
-        await assertRevert(this.crowdsale.buyTokens(purchaser, { value: 1, from: purchaser }));
+        await this.crowdsale.buyTokens(investor, { value: maxContribution.sub(1), from: purchaser });
+        await assertRevert(this.crowdsale.buyTokens(purchaser, { value: maxContribution, from: purchaser }));
       });
     });
   });
