@@ -83,25 +83,25 @@ contract('CappedBountyMinter', function (
       it('should transfer tokens for given addresses', async function () {
         for (const arrayIndex in addresses) {
           const receiverBalance = await this.token.balanceOf(addresses[arrayIndex]);
+          const receiverLockedBalance = await this.token.lockedBalanceOf(addresses[arrayIndex]);
+
           receiverBalance.should.be.bignumber.equal(0);
+          receiverLockedBalance.should.be.bignumber.equal(0);
         }
 
         await this.bounty.multiSend(addresses, amounts, { from: bountyOwner });
 
         for (const arrayIndex in addresses) {
           const receiverBalance = await this.token.balanceOf(addresses[arrayIndex]);
+          const receiverLockedBalance = await this.token.lockedBalanceOf(addresses[arrayIndex]);
 
           const expectedTokens = amounts[arrayIndex].mul(Math.pow(10, this.decimals));
           receiverBalance.should.be.bignumber.equal(expectedTokens);
+          receiverLockedBalance.should.be.bignumber.equal(expectedTokens);
         }
       });
 
       it('should increase givenBountyTokens', async function () {
-        for (const arrayIndex in addresses) {
-          const receiverBalance = await this.token.balanceOf(addresses[arrayIndex]);
-          receiverBalance.should.be.bignumber.equal(0);
-        }
-
         await this.bounty.multiSend(addresses, amounts, { from: bountyOwner });
 
         for (const arrayIndex in addresses) {
@@ -142,7 +142,9 @@ contract('CappedBountyMinter', function (
         it('should transfer tokens for given addresses', async function () {
           for (const arrayIndex in addresses) {
             const receiverBalance = await this.token.balanceOf(addresses[arrayIndex]);
+            const receiverLockedBalance = await this.token.lockedBalanceOf(addresses[arrayIndex]);
             receiverBalance.should.be.bignumber.equal(0);
+            receiverLockedBalance.should.be.bignumber.equal(0);
           }
 
           await this.bounty.multiSend(addresses, amounts, { from: bountyOwner });
@@ -150,18 +152,15 @@ contract('CappedBountyMinter', function (
 
           for (const arrayIndex in addresses) {
             const receiverBalance = await this.token.balanceOf(addresses[arrayIndex]);
+            const receiverLockedBalance = await this.token.lockedBalanceOf(addresses[arrayIndex]);
 
             const expectedTokens = amounts[arrayIndex].mul(Math.pow(10, this.decimals));
             receiverBalance.should.be.bignumber.equal(expectedTokens.mul(2));
+            receiverLockedBalance.should.be.bignumber.equal(expectedTokens.mul(2));
           }
         });
 
         it('should increase givenBountyTokens', async function () {
-          for (const arrayIndex in addresses) {
-            const receiverBalance = await this.token.balanceOf(addresses[arrayIndex]);
-            receiverBalance.should.be.bignumber.equal(0);
-          }
-
           await this.bounty.multiSend(addresses, amounts, { from: bountyOwner });
           await this.bounty.multiSend(addresses, amounts, { from: bountyOwner });
 

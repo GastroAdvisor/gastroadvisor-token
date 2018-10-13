@@ -1,8 +1,8 @@
 pragma solidity ^0.4.24;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
-import "openzeppelin-solidity/contracts/token/ERC20/MintableToken.sol";
 import "eth-token-recover/contracts/TokenRecover.sol";
+import "../token/GastroAdvisorToken.sol";
 
 
 /**
@@ -50,7 +50,7 @@ contract CappedBountyMinter is TokenRecover {
 
       require(totalGivenBountyTokens <= cap);
 
-      require(MintableToken(address(token)).mint(to, value));
+      require(GastroAdvisorToken(address(token)).mintAndLock(to, value));
     }
   }
 
