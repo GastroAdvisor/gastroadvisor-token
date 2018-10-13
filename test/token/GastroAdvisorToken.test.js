@@ -16,6 +16,8 @@ require('chai')
 const GastroAdvisorToken = artifacts.require('GastroAdvisorToken');
 const ERC1363Receiver = artifacts.require('ERC1363ReceiverMock.sol');
 
+const ROLE_MINTER = 'minter';
+const ROLE_OPERATOR = 'operator';
 const RECEIVER_MAGIC_VALUE = '0x88a7ca5c';
 
 contract('GastroAdvisorToken', function (
@@ -23,6 +25,7 @@ contract('GastroAdvisorToken', function (
     owner,
     anotherAccount,
     minter,
+    operator,
     recipient,
     futureMinter,
     anotherFutureMinter,
@@ -61,6 +64,18 @@ contract('GastroAdvisorToken', function (
 
     beforeEach(async function () {
       await this.token.addMinter(minter, { from: owner });
+    });
+
+    describe('after creation', function () {
+      it('owner should be token minter', async function () {
+        const isMinter = await this.token.hasRole(owner, ROLE_MINTER);
+        isMinter.should.equal(true);
+      });
+
+      it('owner should be token operator', async function () {
+        const isOperator = await this.token.hasRole(owner, ROLE_OPERATOR);
+        isOperator.should.equal(true);
+      });
     });
 
     describe('check unlocking date', function () {
@@ -141,6 +156,10 @@ contract('GastroAdvisorToken', function (
     describe('before finish minting', function () {
       describe('trying to add operators', function () {
         describe('in normal conditions', function () {
+          it('allows owner to add operator', async function () {
+            await this.token.addOperator(futureOperator, { from: owner }).should.be.fulfilled;
+          });
+
           it('allows owner to add operators', async function () {
             await this.token.addOperators(
               [futureOperator, anotherFutureOperator],
@@ -149,13 +168,13 @@ contract('GastroAdvisorToken', function (
           });
 
           it('allows owner to remove an operator', async function () {
-            await this.token.addOperators([futureOperator], { from: owner }).should.be.fulfilled;
+            await this.token.addOperator(futureOperator, { from: owner }).should.be.fulfilled;
             await this.token.removeOperator(futureOperator, { from: owner }).should.be.fulfilled;
           });
 
           it('announces a RoleAdded event on addRole', async function () {
             await expectEvent.inTransaction(
-              this.token.addOperators([futureOperator], { from: owner }),
+              this.token.addOperator(futureOperator, { from: owner }),
               'RoleAdded'
             );
           });
@@ -176,16 +195,30 @@ contract('GastroAdvisorToken', function (
           });
 
           it('does not allow "thirdParty" except owner to add operators', async function () {
+            await this.token.addOperators(
+              [futureOperator, anotherFutureOperator], { from: owner }
+            ).should.be.fulfilled;
+
+            await assertRevert(
+              this.token.addOperator(futureOperator, { from: minter })
+            );
+
+            await assertRevert(
+              this.token.addOperator(futureOperator, { from: thirdParty })
+            );
+
             await assertRevert(
               this.token.addOperators([futureOperator, anotherFutureOperator], { from: minter })
             );
+
             await assertRevert(
               this.token.addOperators([futureOperator, anotherFutureOperator], { from: thirdParty })
             );
           });
 
           it('does not allow "thirdParty" except owner to remove an operator', async function () {
-            await this.token.addOperators([futureOperator], { from: owner }).should.be.fulfilled;
+            await this.token.addOperator(futureOperator, { from: owner }).should.be.fulfilled;
+
             await assertRevert(
               this.token.removeOperator(futureOperator, { from: minter })
             );
@@ -199,16 +232,18 @@ contract('GastroAdvisorToken', function (
       describe('if it is not an operator', function () {
         describe('trying to transfer unlocked tokens', function () {
           beforeEach(async function () {
-            await this.token.mint(owner, unlockedTokens, { from: minter });
+            await this.token.mint(thirdParty, unlockedTokens, { from: minter });
           });
 
           it('should fail to transfer', async function () {
-            await assertRevert(this.token.transfer(recipient, unlockedTokens, { from: owner }));
+            await assertRevert(this.token.transfer(recipient, unlockedTokens, { from: thirdParty }));
           });
 
           it('should fail to transferFrom', async function () {
-            await this.token.approve(anotherAccount, unlockedTokens, { from: owner });
-            await assertRevert(this.token.transferFrom(owner, recipient, unlockedTokens, { from: anotherAccount }));
+            await this.token.approve(anotherAccount, unlockedTokens, { from: thirdParty });
+            await assertRevert(
+              this.token.transferFrom(thirdParty, recipient, unlockedTokens, { from: anotherAccount })
+            );
           });
 
           it('should fail to transferAndCall', async function () {
@@ -235,16 +270,16 @@ contract('GastroAdvisorToken', function (
             };
 
             await assertRevert(
-              transferAndCallWithData.call(this, this.receiver.address, unlockedTokens, { from: owner })
+              transferAndCallWithData.call(this, this.receiver.address, unlockedTokens, { from: thirdParty })
             );
 
             await assertRevert(
-              transferAndCallWithoutData.call(this, this.receiver.address, unlockedTokens, { from: owner })
+              transferAndCallWithoutData.call(this, this.receiver.address, unlockedTokens, { from: thirdParty })
             );
           });
 
           it('should fail to transferFromAndCall', async function () {
-            await this.token.approve(anotherAccount, unlockedTokens, { from: owner });
+            await this.token.approve(anotherAccount, unlockedTokens, { from: thirdParty });
             this.receiver = await ERC1363Receiver.new(RECEIVER_MAGIC_VALUE, false);
 
             const transferFromAndCallWithData = function (from, to, value, opts) {
@@ -269,13 +304,13 @@ contract('GastroAdvisorToken', function (
 
             await assertRevert(
               transferFromAndCallWithData.call(
-                this, owner, this.receiver.address, unlockedTokens, { from: anotherAccount }
+                this, thirdParty, this.receiver.address, unlockedTokens, { from: anotherAccount }
               )
             );
 
             await assertRevert(
               transferFromAndCallWithoutData.call(
-                this, owner, this.receiver.address, unlockedTokens, { from: anotherAccount }
+                this, thirdParty, this.receiver.address, unlockedTokens, { from: anotherAccount }
               )
             );
           });
@@ -283,16 +318,16 @@ contract('GastroAdvisorToken', function (
 
         describe('trying to transfer locked tokens', function () {
           beforeEach(async function () {
-            await this.token.mintAndLock(owner, lockedTokens, { from: minter });
+            await this.token.mintAndLock(thirdParty, lockedTokens, { from: minter });
           });
 
           it('should fail to transfer', async function () {
-            await assertRevert(this.token.transfer(recipient, lockedTokens, { from: owner }));
+            await assertRevert(this.token.transfer(recipient, lockedTokens, { from: thirdParty }));
           });
 
           it('should fail to transferFrom', async function () {
-            await this.token.approve(anotherAccount, lockedTokens, { from: owner });
-            await assertRevert(this.token.transferFrom(owner, recipient, lockedTokens, { from: anotherAccount }));
+            await this.token.approve(anotherAccount, lockedTokens, { from: thirdParty });
+            await assertRevert(this.token.transferFrom(thirdParty, recipient, lockedTokens, { from: anotherAccount }));
           });
 
           it('should fail to transferAndCall', async function () {
@@ -319,16 +354,16 @@ contract('GastroAdvisorToken', function (
             };
 
             await assertRevert(
-              transferAndCallWithData.call(this, this.receiver.address, lockedTokens, { from: owner })
+              transferAndCallWithData.call(this, this.receiver.address, lockedTokens, { from: thirdParty })
             );
 
             await assertRevert(
-              transferAndCallWithoutData.call(this, this.receiver.address, lockedTokens, { from: owner })
+              transferAndCallWithoutData.call(this, this.receiver.address, lockedTokens, { from: thirdParty })
             );
           });
 
           it('should fail to transferFromAndCall', async function () {
-            await this.token.approve(anotherAccount, lockedTokens, { from: owner });
+            await this.token.approve(anotherAccount, lockedTokens, { from: thirdParty });
             this.receiver = await ERC1363Receiver.new(RECEIVER_MAGIC_VALUE, false);
 
             const transferFromAndCallWithData = function (from, to, value, opts) {
@@ -353,13 +388,13 @@ contract('GastroAdvisorToken', function (
 
             await assertRevert(
               transferFromAndCallWithData.call(
-                this, owner, this.receiver.address, lockedTokens, { from: anotherAccount }
+                this, thirdParty, this.receiver.address, lockedTokens, { from: anotherAccount }
               )
             );
 
             await assertRevert(
               transferFromAndCallWithoutData.call(
-                this, owner, this.receiver.address, lockedTokens, { from: anotherAccount }
+                this, thirdParty, this.receiver.address, lockedTokens, { from: anotherAccount }
               )
             );
           });
@@ -369,15 +404,20 @@ contract('GastroAdvisorToken', function (
       describe('if it is an operator', function () {
         describe('trying to transfer unlocked tokens', function () {
           beforeEach(async function () {
-            await this.token.mint(owner, unlockedTokens, { from: minter });
-            await this.token.addOperators([owner], { from: owner });
+            await this.token.mint(operator, unlockedTokens, { from: minter });
+            await this.token.addOperator(operator, { from: owner });
+          });
+
+          it('should be token operator', async function () {
+            const isOperator = await this.token.hasRole(operator, ROLE_OPERATOR);
+            isOperator.should.equal(true);
           });
 
           it('transfers the unlocked amount', async function () {
-            await this.token.transfer(recipient, unlockedTokens, { from: owner });
+            await this.token.transfer(recipient, unlockedTokens, { from: operator });
 
-            const senderLockedBalance = await this.token.lockedBalanceOf(owner);
-            const senderBalance = await this.token.balanceOf(owner);
+            const senderLockedBalance = await this.token.lockedBalanceOf(operator);
+            const senderBalance = await this.token.balanceOf(operator);
             senderBalance.should.be.bignumber.equal(senderLockedBalance);
 
             const recipientBalance = await this.token.balanceOf(recipient);
@@ -385,10 +425,10 @@ contract('GastroAdvisorToken', function (
           });
 
           it('transfers less than unlocked amount', async function () {
-            await this.token.transfer(recipient, unlockedTokens.sub(1), { from: owner });
+            await this.token.transfer(recipient, unlockedTokens.sub(1), { from: operator });
 
-            const senderLockedBalance = await this.token.lockedBalanceOf(owner);
-            const senderBalance = await this.token.balanceOf(owner);
+            const senderLockedBalance = await this.token.lockedBalanceOf(operator);
+            const senderBalance = await this.token.balanceOf(operator);
             senderBalance.should.be.bignumber.equal(senderLockedBalance.add(1));
 
             const recipientBalance = await this.token.balanceOf(recipient);
@@ -396,7 +436,7 @@ contract('GastroAdvisorToken', function (
           });
 
           it('should fail to transfer if more than unlocked amount', async function () {
-            await assertRevert(this.token.transfer(recipient, unlockedTokens.add(1), { from: owner }));
+            await assertRevert(this.token.transfer(recipient, unlockedTokens.add(1), { from: operator }));
           });
 
           it('should fail to transferAndCall if more than unlocked amount', async function () {
@@ -423,20 +463,20 @@ contract('GastroAdvisorToken', function (
             };
 
             await assertRevert(
-              transferAndCallWithData.call(this, this.receiver.address, unlockedTokens.add(1), { from: owner })
+              transferAndCallWithData.call(this, this.receiver.address, unlockedTokens.add(1), { from: operator })
             );
 
             await assertRevert(
-              transferAndCallWithoutData.call(this, this.receiver.address, unlockedTokens.add(1), { from: owner })
+              transferAndCallWithoutData.call(this, this.receiver.address, unlockedTokens.add(1), { from: operator })
             );
           });
 
           it('transferFrom the unlocked amount', async function () {
-            await this.token.approve(anotherAccount, unlockedTokens, { from: owner });
-            await this.token.transferFrom(owner, recipient, unlockedTokens, { from: anotherAccount });
+            await this.token.approve(anotherAccount, unlockedTokens, { from: operator });
+            await this.token.transferFrom(operator, recipient, unlockedTokens, { from: anotherAccount });
 
-            const senderLockedBalance = await this.token.lockedBalanceOf(owner);
-            const senderBalance = await this.token.balanceOf(owner);
+            const senderLockedBalance = await this.token.lockedBalanceOf(operator);
+            const senderBalance = await this.token.balanceOf(operator);
             senderBalance.should.be.bignumber.equal(senderLockedBalance);
 
             const recipientBalance = await this.token.balanceOf(recipient);
@@ -444,11 +484,11 @@ contract('GastroAdvisorToken', function (
           });
 
           it('transferFrom less than unlocked amount', async function () {
-            await this.token.approve(anotherAccount, unlockedTokens.sub(1), { from: owner });
-            await this.token.transferFrom(owner, recipient, unlockedTokens.sub(1), { from: anotherAccount });
+            await this.token.approve(anotherAccount, unlockedTokens.sub(1), { from: operator });
+            await this.token.transferFrom(operator, recipient, unlockedTokens.sub(1), { from: anotherAccount });
 
-            const senderLockedBalance = await this.token.lockedBalanceOf(owner);
-            const senderBalance = await this.token.balanceOf(owner);
+            const senderLockedBalance = await this.token.lockedBalanceOf(operator);
+            const senderBalance = await this.token.balanceOf(operator);
             senderBalance.should.be.bignumber.equal(senderLockedBalance.add(1));
 
             const recipientBalance = await this.token.balanceOf(recipient);
@@ -456,14 +496,14 @@ contract('GastroAdvisorToken', function (
           });
 
           it('should fail to transferFrom if more than unlocked amount', async function () {
-            await this.token.approve(anotherAccount, unlockedTokens.add(1), { from: owner });
+            await this.token.approve(anotherAccount, unlockedTokens.add(1), { from: operator });
             await assertRevert(
-              this.token.transferFrom(owner, recipient, unlockedTokens.add(1), { from: anotherAccount })
+              this.token.transferFrom(operator, recipient, unlockedTokens.add(1), { from: anotherAccount })
             );
           });
 
           it('should fail to transferFromAndCall if more than unlocked amount', async function () {
-            await this.token.approve(anotherAccount, unlockedTokens.add(1), { from: owner });
+            await this.token.approve(anotherAccount, unlockedTokens.add(1), { from: operator });
             this.receiver = await ERC1363Receiver.new(RECEIVER_MAGIC_VALUE, false);
 
             const transferFromAndCallWithData = function (from, to, value, opts) {
@@ -488,13 +528,13 @@ contract('GastroAdvisorToken', function (
 
             await assertRevert(
               transferFromAndCallWithData.call(
-                this, owner, this.receiver.address, unlockedTokens.add(1), { from: anotherAccount }
+                this, operator, this.receiver.address, unlockedTokens.add(1), { from: anotherAccount }
               )
             );
 
             await assertRevert(
               transferFromAndCallWithoutData.call(
-                this, owner, this.receiver.address, unlockedTokens.add(1), { from: anotherAccount }
+                this, operator, this.receiver.address, unlockedTokens.add(1), { from: anotherAccount }
               )
             );
           });
@@ -502,17 +542,17 @@ contract('GastroAdvisorToken', function (
 
         describe('trying to transfer locked tokens', function () {
           beforeEach(async function () {
-            await this.token.mintAndLock(owner, lockedTokens, { from: minter });
-            await this.token.addOperators([owner], { from: owner });
+            await this.token.mintAndLock(operator, lockedTokens, { from: minter });
+            await this.token.addOperator(operator, { from: owner });
           });
 
           it('should fail to transfer', async function () {
-            await assertRevert(this.token.transfer(recipient, lockedTokens, { from: owner }));
+            await assertRevert(this.token.transfer(recipient, lockedTokens, { from: operator }));
           });
 
           it('should fail to transferFrom', async function () {
-            await this.token.approve(anotherAccount, lockedTokens, { from: owner });
-            await assertRevert(this.token.transferFrom(owner, recipient, lockedTokens, { from: anotherAccount }));
+            await this.token.approve(anotherAccount, lockedTokens, { from: operator });
+            await assertRevert(this.token.transferFrom(operator, recipient, lockedTokens, { from: anotherAccount }));
           });
 
           it('should fail to transferAndCall', async function () {
@@ -539,16 +579,16 @@ contract('GastroAdvisorToken', function (
             };
 
             await assertRevert(
-              transferAndCallWithData.call(this, this.receiver.address, lockedTokens, { from: owner })
+              transferAndCallWithData.call(this, this.receiver.address, lockedTokens, { from: operator })
             );
 
             await assertRevert(
-              transferAndCallWithoutData.call(this, this.receiver.address, lockedTokens, { from: owner })
+              transferAndCallWithoutData.call(this, this.receiver.address, lockedTokens, { from: operator })
             );
           });
 
           it('should fail to transferFromAndCall', async function () {
-            await this.token.approve(anotherAccount, lockedTokens, { from: owner });
+            await this.token.approve(anotherAccount, lockedTokens, { from: operator });
             this.receiver = await ERC1363Receiver.new(RECEIVER_MAGIC_VALUE, false);
 
             const transferFromAndCallWithData = function (from, to, value, opts) {
@@ -573,13 +613,13 @@ contract('GastroAdvisorToken', function (
 
             await assertRevert(
               transferFromAndCallWithData.call(
-                this, owner, this.receiver.address, lockedTokens, { from: anotherAccount }
+                this, operator, this.receiver.address, lockedTokens, { from: anotherAccount }
               )
             );
 
             await assertRevert(
               transferFromAndCallWithoutData.call(
-                this, owner, this.receiver.address, lockedTokens, { from: anotherAccount }
+                this, operator, this.receiver.address, lockedTokens, { from: anotherAccount }
               )
             );
           });
@@ -589,14 +629,18 @@ contract('GastroAdvisorToken', function (
 
     describe('after finish minting', function () {
       beforeEach(async function () {
-        await this.token.mintAndLock(owner, lockedTokens, { from: minter });
-        await this.token.mint(owner, unlockedTokens, { from: minter });
+        await this.token.mintAndLock(operator, lockedTokens, { from: minter });
+        await this.token.mint(operator, unlockedTokens, { from: minter });
         await this.token.finishMinting({ from: owner });
       });
 
       describe('trying to add operators', function () {
         describe('in normal conditions', function () {
           it('reverts', async function () {
+            await assertRevert(
+              this.token.addOperator(futureOperator, { from: owner })
+            );
+
             await assertRevert(
               this.token.addOperators([futureOperator, anotherFutureOperator], { from: owner })
             );
@@ -610,8 +654,17 @@ contract('GastroAdvisorToken', function (
             );
 
             await assertRevert(
+              this.token.addOperator(futureOperator, { from: minter })
+            );
+
+            await assertRevert(
               this.token.addOperators([futureOperator, anotherFutureOperator], { from: minter })
             );
+
+            await assertRevert(
+              this.token.addOperator(futureOperator, { from: thirdParty })
+            );
+
             await assertRevert(
               this.token.addOperators([futureOperator, anotherFutureOperator], { from: thirdParty })
             );
@@ -622,15 +675,15 @@ contract('GastroAdvisorToken', function (
       context('before unlock time', function () {
         describe('trying to transfer unlocked tokens', function () {
           beforeEach(async function () {
-            (await this.token.balanceOf(owner)).should.be.bignumber.equal(lockedTokens.add(unlockedTokens));
-            (await this.token.lockedBalanceOf(owner)).should.be.bignumber.equal(lockedTokens);
+            (await this.token.balanceOf(operator)).should.be.bignumber.equal(lockedTokens.add(unlockedTokens));
+            (await this.token.lockedBalanceOf(operator)).should.be.bignumber.equal(lockedTokens);
           });
 
           it('transfers the unlocked amount', async function () {
-            await this.token.transfer(recipient, unlockedTokens, { from: owner });
+            await this.token.transfer(recipient, unlockedTokens, { from: operator });
 
-            const senderLockedBalance = await this.token.lockedBalanceOf(owner);
-            const senderBalance = await this.token.balanceOf(owner);
+            const senderLockedBalance = await this.token.lockedBalanceOf(operator);
+            const senderBalance = await this.token.balanceOf(operator);
             senderBalance.should.be.bignumber.equal(senderLockedBalance);
 
             const recipientBalance = await this.token.balanceOf(recipient);
@@ -638,10 +691,10 @@ contract('GastroAdvisorToken', function (
           });
 
           it('transfers less than unlocked amount', async function () {
-            await this.token.transfer(recipient, unlockedTokens.sub(1), { from: owner });
+            await this.token.transfer(recipient, unlockedTokens.sub(1), { from: operator });
 
-            const senderLockedBalance = await this.token.lockedBalanceOf(owner);
-            const senderBalance = await this.token.balanceOf(owner);
+            const senderLockedBalance = await this.token.lockedBalanceOf(operator);
+            const senderBalance = await this.token.balanceOf(operator);
             senderBalance.should.be.bignumber.equal(senderLockedBalance.add(1));
 
             const recipientBalance = await this.token.balanceOf(recipient);
@@ -649,7 +702,7 @@ contract('GastroAdvisorToken', function (
           });
 
           it('should fail to transfer if more than unlocked amount', async function () {
-            await assertRevert(this.token.transfer(recipient, unlockedTokens.add(1), { from: owner }));
+            await assertRevert(this.token.transfer(recipient, unlockedTokens.add(1), { from: operator }));
           });
 
           it('should fail to transferAndCall if more than unlocked amount', async function () {
@@ -676,20 +729,20 @@ contract('GastroAdvisorToken', function (
             };
 
             await assertRevert(
-              transferAndCallWithData.call(this, this.receiver.address, unlockedTokens.add(1), { from: owner })
+              transferAndCallWithData.call(this, this.receiver.address, unlockedTokens.add(1), { from: operator })
             );
 
             await assertRevert(
-              transferAndCallWithoutData.call(this, this.receiver.address, unlockedTokens.add(1), { from: owner })
+              transferAndCallWithoutData.call(this, this.receiver.address, unlockedTokens.add(1), { from: operator })
             );
           });
 
           it('transferFrom the unlocked amount', async function () {
-            await this.token.approve(anotherAccount, unlockedTokens, { from: owner });
-            await this.token.transferFrom(owner, recipient, unlockedTokens, { from: anotherAccount });
+            await this.token.approve(anotherAccount, unlockedTokens, { from: operator });
+            await this.token.transferFrom(operator, recipient, unlockedTokens, { from: anotherAccount });
 
-            const senderLockedBalance = await this.token.lockedBalanceOf(owner);
-            const senderBalance = await this.token.balanceOf(owner);
+            const senderLockedBalance = await this.token.lockedBalanceOf(operator);
+            const senderBalance = await this.token.balanceOf(operator);
             senderBalance.should.be.bignumber.equal(senderLockedBalance);
 
             const recipientBalance = await this.token.balanceOf(recipient);
@@ -697,11 +750,11 @@ contract('GastroAdvisorToken', function (
           });
 
           it('transferFrom less than unlocked amount', async function () {
-            await this.token.approve(anotherAccount, unlockedTokens.sub(1), { from: owner });
-            await this.token.transferFrom(owner, recipient, unlockedTokens.sub(1), { from: anotherAccount });
+            await this.token.approve(anotherAccount, unlockedTokens.sub(1), { from: operator });
+            await this.token.transferFrom(operator, recipient, unlockedTokens.sub(1), { from: anotherAccount });
 
-            const senderLockedBalance = await this.token.lockedBalanceOf(owner);
-            const senderBalance = await this.token.balanceOf(owner);
+            const senderLockedBalance = await this.token.lockedBalanceOf(operator);
+            const senderBalance = await this.token.balanceOf(operator);
             senderBalance.should.be.bignumber.equal(senderLockedBalance.add(1));
 
             const recipientBalance = await this.token.balanceOf(recipient);
@@ -709,14 +762,14 @@ contract('GastroAdvisorToken', function (
           });
 
           it('should fail to transferFrom if more than unlocked amount', async function () {
-            await this.token.approve(anotherAccount, unlockedTokens.add(1), { from: owner });
+            await this.token.approve(anotherAccount, unlockedTokens.add(1), { from: operator });
             await assertRevert(
-              this.token.transferFrom(owner, recipient, unlockedTokens.add(1), { from: anotherAccount })
+              this.token.transferFrom(operator, recipient, unlockedTokens.add(1), { from: anotherAccount })
             );
           });
 
           it('should fail to transferFromAndCall if more than unlocked amount', async function () {
-            await this.token.approve(anotherAccount, unlockedTokens.add(1), { from: owner });
+            await this.token.approve(anotherAccount, unlockedTokens.add(1), { from: operator });
             this.receiver = await ERC1363Receiver.new(RECEIVER_MAGIC_VALUE, false);
 
             const transferFromAndCallWithData = function (from, to, value, opts) {
@@ -741,13 +794,13 @@ contract('GastroAdvisorToken', function (
 
             await assertRevert(
               transferFromAndCallWithData.call(
-                this, owner, this.receiver.address, unlockedTokens.add(1), { from: anotherAccount }
+                this, operator, this.receiver.address, unlockedTokens.add(1), { from: anotherAccount }
               )
             );
 
             await assertRevert(
               transferFromAndCallWithoutData.call(
-                this, owner, this.receiver.address, unlockedTokens.add(1), { from: anotherAccount }
+                this, operator, this.receiver.address, unlockedTokens.add(1), { from: anotherAccount }
               )
             );
           });
@@ -755,18 +808,18 @@ contract('GastroAdvisorToken', function (
 
         describe('trying to transfer locked tokens', function () {
           beforeEach(async function () {
-            await this.token.transfer(recipient, unlockedTokens, { from: owner });
-            (await this.token.balanceOf(owner)).should.be.bignumber.equal(lockedTokens);
-            (await this.token.lockedBalanceOf(owner)).should.be.bignumber.equal(lockedTokens);
+            await this.token.transfer(recipient, unlockedTokens, { from: operator });
+            (await this.token.balanceOf(operator)).should.be.bignumber.equal(lockedTokens);
+            (await this.token.lockedBalanceOf(operator)).should.be.bignumber.equal(lockedTokens);
           });
 
           it('should fail to transfer', async function () {
-            await assertRevert(this.token.transfer(recipient, lockedTokens, { from: owner }));
+            await assertRevert(this.token.transfer(recipient, lockedTokens, { from: operator }));
           });
 
           it('should fail to transferFrom', async function () {
-            await this.token.approve(anotherAccount, lockedTokens, { from: owner });
-            await assertRevert(this.token.transferFrom(owner, recipient, lockedTokens, { from: anotherAccount }));
+            await this.token.approve(anotherAccount, lockedTokens, { from: operator });
+            await assertRevert(this.token.transferFrom(operator, recipient, lockedTokens, { from: anotherAccount }));
           });
 
           it('should fail to transferAndCall', async function () {
@@ -793,17 +846,17 @@ contract('GastroAdvisorToken', function (
             };
 
             await assertRevert(
-              transferAndCallWithData.call(this, this.receiver.address, lockedTokens, { from: owner })
+              transferAndCallWithData.call(this, this.receiver.address, lockedTokens, { from: operator })
             );
 
             await assertRevert(
-              transferAndCallWithoutData.call(this, this.receiver.address, lockedTokens, { from: owner })
+              transferAndCallWithoutData.call(this, this.receiver.address, lockedTokens, { from: operator })
             );
           });
 
           it('should fail to transferFromAndCall', async function () {
             this.receiver = await ERC1363Receiver.new(RECEIVER_MAGIC_VALUE, false);
-            await this.token.approve(anotherAccount, lockedTokens, { from: owner });
+            await this.token.approve(anotherAccount, lockedTokens, { from: operator });
 
             const transferFromAndCallWithData = function (from, to, value, opts) {
               return sendTransaction(
@@ -827,13 +880,13 @@ contract('GastroAdvisorToken', function (
 
             await assertRevert(
               transferFromAndCallWithData.call(
-                this, owner, this.receiver.address, lockedTokens, { from: anotherAccount }
+                this, operator, this.receiver.address, lockedTokens, { from: anotherAccount }
               )
             );
 
             await assertRevert(
               transferFromAndCallWithoutData.call(
-                this, owner, this.receiver.address, lockedTokens, { from: anotherAccount }
+                this, operator, this.receiver.address, lockedTokens, { from: anotherAccount }
               )
             );
           });
@@ -848,17 +901,17 @@ contract('GastroAdvisorToken', function (
         });
 
         it('balance should return locked and unlocked tokens', async function () {
-          (await this.token.balanceOf(owner)).should.be.bignumber.equal(amount);
+          (await this.token.balanceOf(operator)).should.be.bignumber.equal(amount);
         });
 
         it('locked balance should return zero', async function () {
-          (await this.token.lockedBalanceOf(owner)).should.be.bignumber.equal(0);
+          (await this.token.lockedBalanceOf(operator)).should.be.bignumber.equal(0);
         });
 
         it('transfers the requested amount', async function () {
-          await this.token.transfer(recipient, amount, { from: owner });
+          await this.token.transfer(recipient, amount, { from: operator });
 
-          const senderBalance = await this.token.balanceOf(owner);
+          const senderBalance = await this.token.balanceOf(operator);
           senderBalance.should.be.bignumber.equal(0);
 
           const recipientBalance = await this.token.balanceOf(recipient);
@@ -866,10 +919,10 @@ contract('GastroAdvisorToken', function (
         });
 
         it('transferFrom the requested amount', async function () {
-          await this.token.approve(anotherAccount, amount, { from: owner });
-          await this.token.transferFrom(owner, recipient, amount, { from: anotherAccount });
+          await this.token.approve(anotherAccount, amount, { from: operator });
+          await this.token.transferFrom(operator, recipient, amount, { from: anotherAccount });
 
-          const senderBalance = await this.token.balanceOf(owner);
+          const senderBalance = await this.token.balanceOf(operator);
           senderBalance.should.be.bignumber.equal(0);
 
           const recipientBalance = await this.token.balanceOf(recipient);

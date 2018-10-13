@@ -34,6 +34,8 @@ contract GastroAdvisorToken is BaseToken {
   public
   {
     lockedUntil = _lockedUntil;
+    addMinter(owner);
+    addOperator(owner);
   }
 
   function transfer(
@@ -86,6 +88,15 @@ contract GastroAdvisorToken is BaseToken {
   {
     lockedBalances[_to] = lockedBalances[_to].add(_amount);
     return super.mint(_to, _amount);
+  }
+
+  /**
+   * @dev add a operator role to an address
+   * @param _operator address
+   */
+  function addOperator(address _operator) public onlyOwner {
+    require(!mintingFinished);
+    addRole(_operator, ROLE_OPERATOR);
   }
 
   /**
