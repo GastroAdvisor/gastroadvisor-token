@@ -8,67 +8,71 @@ import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 /**
  * @title Contributions
  * @author Vittorio Minacori (https://github.com/vittominacori)
- * @dev Utility contract where to save any information about Crowdsales' contributions
+ * @dev Utility contract where to save any information about Crowdsale contributions
  */
 contract Contributions is RBAC, Ownable {
 
   using SafeMath for uint256;
 
-  string public constant ROLE_MINTER = "minter";
+  string public constant ROLE_OPERATOR = "operator";
 
-  modifier onlyMinter () {
-    checkRole(msg.sender, ROLE_MINTER);
+  modifier onlyOperator () {
+    checkRole(msg.sender, ROLE_OPERATOR);
     _;
   }
 
+  uint256 public totalSoldTokens;
+  uint256 public totalWeiRaised;
   mapping(address => uint256) public tokenBalances;
-  mapping(address => uint256) public ethContributions;
+  mapping(address => uint256) public weiContributions;
   address[] public addresses;
 
   constructor() public {}
 
+  /**
+   * @dev add contribution into the contributions array
+   * @param _address address
+   * @param _weiAmount uint256
+   * @param _tokenAmount uint256
+   */
   function addBalance(
     address _address,
     uint256 _weiAmount,
     uint256 _tokenAmount
   )
   public
-  onlyMinter
+  onlyOperator
   {
-    if (ethContributions[_address] == 0) {
+    if (weiContributions[_address] == 0) {
       addresses.push(_address);
     }
-    ethContributions[_address] = ethContributions[_address].add(_weiAmount);
+    weiContributions[_address] = weiContributions[_address].add(_weiAmount);
+    totalWeiRaised = totalWeiRaised.add(_weiAmount);
+
     tokenBalances[_address] = tokenBalances[_address].add(_tokenAmount);
+    totalSoldTokens = totalSoldTokens.add(_tokenAmount);
   }
 
   /**
-   * @dev add a minter role to an address
-   * @param _minter address
+   * @dev add a operator role to an address
+   * @param _operator address
    */
-  function addMinter(address _minter) public onlyOwner {
-    addRole(_minter, ROLE_MINTER);
+  function addOperator(address _operator) public onlyOwner {
+    addRole(_operator, ROLE_OPERATOR);
   }
 
   /**
-   * @dev add a minter role to an array of addresses
-   * @param _minters address[]
+   * @dev remove a operator role from an address
+   * @param _operator address
    */
-  function addMinters(address[] _minters) public onlyOwner {
-    require(_minters.length > 0);
-    for (uint i = 0; i < _minters.length; i++) {
-      addRole(_minters[i], ROLE_MINTER);
-    }
+  function removeOperator(address _operator) public onlyOwner {
+    removeRole(_operator, ROLE_OPERATOR);
   }
 
   /**
-   * @dev remove a minter role from an address
-   * @param _minter address
+   * @dev return the contributions length
+   * @return uint256
    */
-  function removeMinter(address _minter) public onlyOwner {
-    removeRole(_minter, ROLE_MINTER);
-  }
-
   function getContributorsLength() public view returns (uint) {
     return addresses.length;
   }

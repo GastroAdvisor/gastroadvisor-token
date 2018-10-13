@@ -61,7 +61,7 @@ contract('ForkRC', function ([owner, investor, wallet, purchaser, thirdParty]) {
     );
 
     await this.token.addMinter(this.crowdsale.address);
-    await this.contributions.addMinter(this.crowdsale.address);
+    await this.contributions.addOperator(this.crowdsale.address);
   });
 
   context('like a IncreasingBonusCrowdsale', function () {

@@ -53,14 +53,14 @@ function shouldBehaveLikeDefaultCrowdsale ([owner, investor, wallet, purchaser, 
 
         const preTokenBalance = await this.contributions.tokenBalances(investor);
         preTokenBalance.should.be.bignumber.equal(0);
-        const preEthBalance = await this.contributions.ethContributions(investor);
+        const preEthBalance = await this.contributions.weiContributions(investor);
         preEthBalance.should.be.bignumber.equal(0);
 
         await this.crowdsale.sendTransaction({ value: value, from: investor });
 
         const postOneTokenBalance = await this.contributions.tokenBalances(investor);
         postOneTokenBalance.should.be.bignumber.equal(value.mul(rate));
-        const postOneEthBalance = await this.contributions.ethContributions(investor);
+        const postOneEthBalance = await this.contributions.weiContributions(investor);
         postOneEthBalance.should.be.bignumber.equal(value);
 
         await this.crowdsale.sendTransaction({ value: value, from: investor });
@@ -68,7 +68,7 @@ function shouldBehaveLikeDefaultCrowdsale ([owner, investor, wallet, purchaser, 
         const postTwoTokenBalance = await this.contributions.tokenBalances(investor);
         (postTwoTokenBalance.sub(postOneTokenBalance)).should.be.bignumber.equal(value.mul(rate));
         postTwoTokenBalance.should.be.bignumber.equal(value.mul(2).mul(rate));
-        const postTwoEthBalance = await this.contributions.ethContributions(investor);
+        const postTwoEthBalance = await this.contributions.weiContributions(investor);
         (postTwoEthBalance.sub(postOneEthBalance)).should.be.bignumber.equal(value);
         postTwoEthBalance.should.be.bignumber.equal(value.mul(2));
 
@@ -104,14 +104,14 @@ function shouldBehaveLikeDefaultCrowdsale ([owner, investor, wallet, purchaser, 
 
         const preTokenBalance = await this.contributions.tokenBalances(investor);
         preTokenBalance.should.be.bignumber.equal(0);
-        const preEthBalance = await this.contributions.ethContributions(investor);
+        const preEthBalance = await this.contributions.weiContributions(investor);
         preEthBalance.should.be.bignumber.equal(0);
 
         await this.crowdsale.buyTokens(investor, { value, from: purchaser });
 
         const postOneTokenBalance = await this.contributions.tokenBalances(investor);
         postOneTokenBalance.should.be.bignumber.equal(value.mul(rate));
-        const postOneEthBalance = await this.contributions.ethContributions(investor);
+        const postOneEthBalance = await this.contributions.weiContributions(investor);
         postOneEthBalance.should.be.bignumber.equal(value);
 
         await this.crowdsale.buyTokens(investor, { value, from: purchaser });
@@ -119,7 +119,7 @@ function shouldBehaveLikeDefaultCrowdsale ([owner, investor, wallet, purchaser, 
         const postTwoTokenBalance = await this.contributions.tokenBalances(investor);
         (postTwoTokenBalance.sub(postOneTokenBalance)).should.be.bignumber.equal(value.mul(rate));
         postTwoTokenBalance.should.be.bignumber.equal(value.mul(2).mul(rate));
-        const postTwoEthBalance = await this.contributions.ethContributions(investor);
+        const postTwoEthBalance = await this.contributions.weiContributions(investor);
         (postTwoEthBalance.sub(postOneEthBalance)).should.be.bignumber.equal(value);
         postTwoEthBalance.should.be.bignumber.equal(value.mul(2));
 
