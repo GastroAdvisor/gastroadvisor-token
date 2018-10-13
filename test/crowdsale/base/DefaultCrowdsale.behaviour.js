@@ -240,6 +240,30 @@ function shouldBehaveLikeDefaultCrowdsale ([owner, investor, wallet, purchaser, 
         });
       });
     });
+
+    describe('updating rate', function () {
+      const newRate = new BigNumber(123);
+
+      describe('if owner is calling', function () {
+        it('success', async function () {
+          await this.crowdsale.updateRate(newRate, { from: owner });
+          const currentRate = await this.crowdsale.rate();
+          currentRate.should.be.bignumber.equal(newRate);
+        });
+      });
+
+      describe('if setting zero', function () {
+        it('reverts', async function () {
+          await assertRevert(this.crowdsale.updateRate(0, { from: owner }));
+        });
+      });
+
+      describe('if thirdParty is calling', function () {
+        it('reverts', async function () {
+          await assertRevert(this.crowdsale.updateRate(newRate, { from: thirdParty }));
+        });
+      });
+    });
   });
 
   context('like a TokenRecover', function () {

@@ -57,6 +57,15 @@ contract DefaultCrowdsale is TimedCrowdsale, MintedCrowdsale, TokenCappedCrowdsa
   }
 
   /**
+   * @dev Function to update conversion rate. To be used only in case of big ETH volatility
+   * @param _rate The new rate
+   */
+  function updateRate(uint256 _rate) public onlyOwner {
+    require(_rate > 0);
+    rate = _rate;
+  }
+
+  /**
    * @dev Extend parent behavior requiring purchase to respect the minimum and maximum contribution limit
    * @param _beneficiary Token purchaser
    * @param _weiAmount Amount of wei contributed
