@@ -83,6 +83,8 @@ contract('CrowdGenerator', function ([owner, wallet, thirdParty]) {
       (await this.generator.rate()).should.be.bignumber.equal(rate);
       (await this.generator.wallet()).should.be.equal(wallet);
       (await this.generator.tokenCap()).should.be.bignumber.equal(tokenCap);
+      (await this.generator.minimumContribution()).should.be.bignumber.equal(minimumContribution);
+      (await this.generator.maximumContribution()).should.be.bignumber.equal(tokenCap.div(rate));
       (await this.generator.token()).should.be.equal(this.token.address);
       (await this.generator.contributions()).should.be.equal(this.contributions.address);
     });

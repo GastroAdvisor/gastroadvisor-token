@@ -18,6 +18,7 @@ contract DefaultCrowdsale is TimedCrowdsale, MintedCrowdsale, TokenCappedCrowdsa
   Contributions public contributions;
 
   uint256 public minimumContribution;
+  uint256 public maximumContribution;
   uint256 public transactionCount;
 
   constructor(
@@ -27,6 +28,7 @@ contract DefaultCrowdsale is TimedCrowdsale, MintedCrowdsale, TokenCappedCrowdsa
     address _wallet,
     uint256 _tokenCap,
     uint256 _minimumContribution,
+    uint256 _maximumContribution,
     address _token,
     address _contributions
   )
@@ -35,9 +37,12 @@ contract DefaultCrowdsale is TimedCrowdsale, MintedCrowdsale, TokenCappedCrowdsa
   TokenCappedCrowdsale(_tokenCap)
   public
   {
+    require(_maximumContribution >= _minimumContribution);
     require(_contributions != address(0));
-    contributions = Contributions(_contributions);
+
     minimumContribution = _minimumContribution;
+    maximumContribution = _maximumContribution;
+    contributions = Contributions(_contributions);
   }
 
   // false if the ico is not started, true if the ico is started and running, true if the ico is completed
@@ -52,7 +57,7 @@ contract DefaultCrowdsale is TimedCrowdsale, MintedCrowdsale, TokenCappedCrowdsa
   }
 
   /**
-   * @dev Extend parent behavior requiring purchase to respect the minimumContribution.
+   * @dev Extend parent behavior requiring purchase to respect the minimum and maximum contribution limit
    * @param _beneficiary Token purchaser
    * @param _weiAmount Amount of wei contributed
    */
@@ -63,6 +68,9 @@ contract DefaultCrowdsale is TimedCrowdsale, MintedCrowdsale, TokenCappedCrowdsa
   internal
   {
     require(_weiAmount >= minimumContribution);
+    require(
+      contributions.weiContributions(_beneficiary).add(_weiAmount) <= maximumContribution
+    );
     super._preValidatePurchase(_beneficiary, _weiAmount);
   }
 

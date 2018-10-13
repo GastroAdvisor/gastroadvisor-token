@@ -17,6 +17,7 @@ contract ForkRC is IncreasingBonusCrowdsale {
     address _wallet,
     uint256 _tokenCap,
     uint256 _minimumContribution,
+    uint256 _maximumContribution,
     address _token,
     address _contributions
   )
@@ -27,6 +28,7 @@ contract ForkRC is IncreasingBonusCrowdsale {
     _wallet,
     _tokenCap,
     _minimumContribution,
+    _maximumContribution,
     _token,
     _contributions
   )

@@ -21,6 +21,7 @@ contract IncreasingBonusCrowdsale is DefaultCrowdsale {
     address _wallet,
     uint256 _tokenCap,
     uint256 _minimumContribution,
+    uint256 _maximumContribution,
     address _token,
     address _contributions
   )
@@ -31,6 +32,7 @@ contract IncreasingBonusCrowdsale is DefaultCrowdsale {
     _wallet,
     _tokenCap,
     _minimumContribution,
+    _maximumContribution,
     _token,
     _contributions
   )

@@ -25,7 +25,7 @@ function shouldBehaveLikeDefaultCrowdsale ([owner, investor, wallet, purchaser, 
     beforeEach(async function () {
       await increaseTimeTo(this.openingTime);
     });
-    shouldBehaveLikeTokenCappedCrowdsale([investor, purchaser]);
+    shouldBehaveLikeTokenCappedCrowdsale([investor, purchaser, thirdParty]);
   });
 
   context('like a Minted Crowdsale', function () {
@@ -37,9 +37,11 @@ function shouldBehaveLikeDefaultCrowdsale ([owner, investor, wallet, purchaser, 
 
   context('like a DefaultCrowdsale', function () {
     let minContribution;
+    let maxContribution;
 
     beforeEach(async function () {
       minContribution = await this.crowdsale.minimumContribution();
+      maxContribution = await this.crowdsale.maximumContribution();
     });
 
     describe('high-level purchase', function () {
@@ -89,6 +91,16 @@ function shouldBehaveLikeDefaultCrowdsale ([owner, investor, wallet, purchaser, 
       it('should fail if less than minimum contribution', async function () {
         await assertRevert(
           this.crowdsale.sendTransaction({ value: minContribution.sub(1), from: investor })
+        );
+      });
+
+      it('should accept maximum contribution', async function () {
+        await this.crowdsale.sendTransaction({ value: maxContribution, from: investor });
+      });
+
+      it('should fail if more than maximum contribution', async function () {
+        await assertRevert(
+          this.crowdsale.sendTransaction({ value: maxContribution.add(1), from: investor })
         );
       });
     });
@@ -142,6 +154,16 @@ function shouldBehaveLikeDefaultCrowdsale ([owner, investor, wallet, purchaser, 
           this.crowdsale.buyTokens(investor, { value: minContribution.sub(1), from: purchaser })
         );
       });
+
+      it('should accept maximum contribution', async function () {
+        await this.crowdsale.buyTokens(investor, { value: maxContribution.sub(1), from: purchaser });
+      });
+
+      it('should fail if more than maximum contribution', async function () {
+        await assertRevert(
+          this.crowdsale.buyTokens(investor, { value: maxContribution.add(1), from: purchaser })
+        );
+      });
     });
 
     context('check statuses', function () {
@@ -186,10 +208,8 @@ function shouldBehaveLikeDefaultCrowdsale ([owner, investor, wallet, purchaser, 
 
         describe('if tokenCap reached', function () {
           beforeEach(async function () {
-            const currentRate = await this.crowdsale.rate();
-            const tokenCap = await this.crowdsale.tokenCap();
-            const cap = tokenCap.div(currentRate);
-            await this.crowdsale.send(cap);
+            await this.crowdsale.sendTransaction({ value: maxContribution, from: investor });
+            await this.crowdsale.sendTransaction({ value: maxContribution, from: purchaser });
           });
 
           it('ended should be true', async function () {

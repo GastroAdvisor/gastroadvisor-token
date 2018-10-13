@@ -10,6 +10,8 @@ import "../crowdsale/ForkRC.sol";
  */
 contract CrowdGenerator is TokenRecover {
 
+  using SafeMath for uint256;
+
   uint256[] public bonusRanges;
   uint256[] public bonusValues;
 
@@ -20,6 +22,7 @@ contract CrowdGenerator is TokenRecover {
   address public token;
   address public contributions;
   uint256 public minimumContribution;
+  uint256 public maximumContribution;
 
   address[] public crowdsaleList;
 
@@ -56,8 +59,9 @@ contract CrowdGenerator is TokenRecover {
     rate = _rate;
     wallet = _wallet;
     tokenCap = _tokenCap;
-    token = _token;
     minimumContribution = _minimumContribution;
+    maximumContribution = tokenCap.div(rate);
+    token = _token;
     contributions = _contributions;
     bonusRanges = _bonusRanges;
     bonusValues = _bonusValues;
@@ -72,6 +76,7 @@ contract CrowdGenerator is TokenRecover {
         wallet,
         tokenCap,
         minimumContribution,
+        maximumContribution,
         token,
         contributions
       );
