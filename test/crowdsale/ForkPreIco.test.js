@@ -24,6 +24,7 @@ contract('ForkPreIco', function ([owner, investor, wallet, purchaser, thirdParty
   const _name = 'GastroAdvisorToken';
   const _symbol = 'FORK';
   const _decimals = 18;
+  const _cap = (new BigNumber(10000)).mul(Math.pow(10, _decimals));
 
   const rate = new BigNumber(100);
   const tokenDecimals = 18;
@@ -48,6 +49,7 @@ contract('ForkPreIco', function ([owner, investor, wallet, purchaser, thirdParty
       _name,
       _symbol,
       _decimals,
+      _cap,
       this.lockedUntil,
       { from: owner }
     );

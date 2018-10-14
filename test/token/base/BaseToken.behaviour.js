@@ -1,6 +1,7 @@
 const { shouldBehaveLikeERC1363BasicToken } = require('erc-payable-token/test/token/ERC1363/ERC1363BasicToken.behaviour'); // eslint-disable-line max-len
 const { shouldBehaveLikeMintableToken } = require('openzeppelin-solidity/test/token/ERC20/MintableToken.behaviour');
 const { shouldBehaveLikeRBACMintableToken } = require('openzeppelin-solidity/test/token/ERC20/RBACMintableToken.behaviour'); // eslint-disable-line max-len
+const { shouldBehaveLikeCappedToken } = require('openzeppelin-solidity/test/token/ERC20/CappedToken.behaviour');
 const { shouldBehaveLikeBurnableToken } = require('openzeppelin-solidity/test/token/ERC20/BurnableToken.behaviour');
 const { shouldBehaveLikeTokenRecover } = require('eth-token-recover/test/TokenRecover.behaviour');
 
@@ -17,7 +18,7 @@ require('chai')
 
 function shouldBehaveLikeBaseToken (
   [owner, anotherAccount, minter, recipient, futureMinter, anotherFutureMinter, thirdParty],
-  [_name, _symbol, _decimals]
+  [_name, _symbol, _decimals, _cap]
 ) {
   context('like a DetailedERC20 token', function () {
     shouldBehaveLikeDetailedERC20Token(_name, _symbol, _decimals);
@@ -35,6 +36,13 @@ function shouldBehaveLikeBaseToken (
       await this.token.addMinter(minter, { from: owner });
     });
     shouldBehaveLikeRBACMintableToken([owner, anotherAccount, minter]);
+  });
+
+  context('like a CappedToken', function () {
+    beforeEach(async function () {
+      await this.token.addMinter(minter, { from: owner });
+    });
+    shouldBehaveLikeCappedToken([owner, anotherAccount, minter, _cap]);
   });
 
   context('like a BurnableToken', function () {

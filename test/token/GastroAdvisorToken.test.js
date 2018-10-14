@@ -37,6 +37,7 @@ contract('GastroAdvisorToken', function (
   const _name = 'GastroAdvisorToken';
   const _symbol = 'FORK';
   const _decimals = 18;
+  const _cap = (new BigNumber(10000)).mul(Math.pow(10, _decimals));
 
   beforeEach(async function () {
     this.lockedUntil = (await latestTime()) + duration.weeks(1);
@@ -46,6 +47,7 @@ contract('GastroAdvisorToken', function (
       _name,
       _symbol,
       _decimals,
+      _cap,
       this.lockedUntil,
       { from: owner }
     );
@@ -54,7 +56,7 @@ contract('GastroAdvisorToken', function (
   context('like a BaseToken', function () {
     shouldBehaveLikeBaseToken(
       [owner, anotherAccount, minter, recipient, futureMinter, anotherFutureMinter, thirdParty],
-      [_name, _symbol, _decimals]
+      [_name, _symbol, _decimals, _cap]
     );
   });
 
@@ -64,6 +66,21 @@ contract('GastroAdvisorToken', function (
 
     beforeEach(async function () {
       await this.token.addMinter(minter, { from: owner });
+    });
+
+    describe('creating a valid token', function () {
+      it('should fail with zero cap', async function () {
+        await assertRevert(
+          GastroAdvisorToken.new(
+            _name,
+            _symbol,
+            _decimals,
+            0,
+            this.lockedUntil,
+            { from: owner }
+          )
+        );
+      });
     });
 
     describe('after creation', function () {

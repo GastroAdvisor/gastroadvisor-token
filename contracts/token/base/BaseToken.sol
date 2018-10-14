@@ -3,6 +3,7 @@ pragma solidity ^0.4.24;
 import "openzeppelin-solidity/contracts/token/ERC20/DetailedERC20.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/RBACMintableToken.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/BurnableToken.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/CappedToken.sol";
 import "erc-payable-token/contracts/token/ERC1363/ERC1363BasicToken.sol";
 import "eth-token-recover/contracts/TokenRecover.sol";
 
@@ -13,14 +14,16 @@ import "eth-token-recover/contracts/TokenRecover.sol";
  * @dev BaseToken is An ERC20 token with a lot of stuffs used as Base for any other token contract.
  *  It is DetailedERC20, RBACMintableToken, BurnableToken, ERC1363BasicToken.
  */
-contract BaseToken is DetailedERC20, RBACMintableToken, BurnableToken, ERC1363BasicToken, TokenRecover { // solium-disable-line max-len
+contract BaseToken is DetailedERC20, CappedToken, RBACMintableToken, BurnableToken, ERC1363BasicToken, TokenRecover { // solium-disable-line max-len
 
   constructor(
     string _name,
     string _symbol,
-    uint8 _decimals
+    uint8 _decimals,
+    uint256 _cap
   )
   DetailedERC20(_name, _symbol, _decimals)
+  CappedToken(_cap)
   public
   {}
 }

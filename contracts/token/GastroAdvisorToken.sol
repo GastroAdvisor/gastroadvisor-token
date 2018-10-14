@@ -28,9 +28,10 @@ contract GastroAdvisorToken is BaseToken {
     string _name,
     string _symbol,
     uint8 _decimals,
+    uint256 _cap,
     uint256 _lockedUntil
   )
-  BaseToken(_name, _symbol, _decimals)
+  BaseToken(_name, _symbol, _decimals, _cap)
   public
   {
     lockedUntil = _lockedUntil;
