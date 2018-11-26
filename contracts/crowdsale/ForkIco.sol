@@ -4,11 +4,11 @@ import "./base/TimedBonusCrowdsale.sol";
 
 
 /**
- * @title ForkICO
+ * @title ForkIco
  * @author Vittorio Minacori (https://github.com/vittominacori)
  * @dev Extends from TimedBonusCrowdsale
  */
-contract ForkICO is TimedBonusCrowdsale {
+contract ForkIco is TimedBonusCrowdsale {
 
   constructor(
     uint256 _startTime,
