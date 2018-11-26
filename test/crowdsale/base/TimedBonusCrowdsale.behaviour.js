@@ -16,15 +16,9 @@ function shouldBehaveLikeTimedBonusCrowdsale ([owner, investor, wallet, purchase
     shouldBehaveLikeDefaultCrowdsale([owner, investor, wallet, purchaser, thirdParty], rate);
   });
 
-  let tokenCap;
-  let cap;
-
   const value = ether(0.2);
 
   beforeEach(async function () {
-    tokenCap = await this.crowdsale.tokenCap();
-    cap = tokenCap.div(rate);
-
     this.bonusDatesStruct = {
       'firstPhase': this.openingTime + duration.weeks(2),
       'secondPhase': this.openingTime + duration.weeks(4),
@@ -132,12 +126,6 @@ function shouldBehaveLikeTimedBonusCrowdsale ([owner, investor, wallet, purchase
         await increaseTimeTo(this.openingTime);
       });
 
-      describe('if trying to buy more than total tokens', function () {
-        it('reverts', async function () {
-          await assertRevert(this.crowdsale.buyTokens(investor, { value: cap, from: investor }));
-        });
-      });
-
       it('user should have right tokens number', async function () {
         let userBalance = await this.token.balanceOf(investor);
         userBalance.should.be.bignumber.equal(0);
@@ -170,12 +158,6 @@ function shouldBehaveLikeTimedBonusCrowdsale ([owner, investor, wallet, purchase
         await increaseTimeTo(this.bonusDatesStruct.firstPhase + duration.seconds(1));
       });
 
-      describe('if trying to buy more than total tokens', function () {
-        it('reverts', async function () {
-          await assertRevert(this.crowdsale.buyTokens(investor, { value: cap, from: investor }));
-        });
-      });
-
       it('user should have right tokens number', async function () {
         let userBalance = await this.token.balanceOf(investor);
         userBalance.should.be.bignumber.equal(0);
@@ -206,12 +188,6 @@ function shouldBehaveLikeTimedBonusCrowdsale ([owner, investor, wallet, purchase
     describe('in third phase', function () {
       beforeEach(async function () {
         await increaseTimeTo(this.bonusDatesStruct.secondPhase + duration.seconds(1));
-      });
-
-      describe('if trying to buy more than total tokens', function () {
-        it('reverts', async function () {
-          await assertRevert(this.crowdsale.buyTokens(investor, { value: cap, from: investor }));
-        });
       });
 
       it('user should have right tokens number', async function () {
