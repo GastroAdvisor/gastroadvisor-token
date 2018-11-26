@@ -213,5 +213,32 @@ contract('ForkIco', function ([owner, investor, wallet, purchaser, thirdParty]) 
         );
       });
     });
+
+    context('testing adjustTokenCap', function () {
+      const newTokenCap = new BigNumber(10000).mul(Math.pow(10, 18));
+
+      describe('if owner is calling', function () {
+        it('success', async function () {
+          await this.crowdsale.adjustTokenCap(newTokenCap, { from: owner }).should.be.fulfilled;
+          (await this.crowdsale.tokenCap()).should.be.bignumber.equal(newTokenCap);
+        });
+      });
+
+      describe('if third party is calling', function () {
+        it('reverts', async function () {
+          await assertRevert(
+            this.crowdsale.adjustTokenCap(newTokenCap, { from: thirdParty })
+          );
+        });
+      });
+
+      describe('if invalid tokenCap', function () {
+        it('reverts', async function () {
+          await assertRevert(
+            this.crowdsale.adjustTokenCap(0, { from: owner })
+          );
+        });
+      });
+    });
   });
 });

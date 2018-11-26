@@ -34,4 +34,9 @@ contract ForkIco is TimedBonusCrowdsale {
   )
   public
   {}
+
+  function adjustTokenCap(uint256 _newTokenCap) external onlyOwner {
+    require(_newTokenCap > 0);
+    tokenCap = _newTokenCap;
+  }
 }
