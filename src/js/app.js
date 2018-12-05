@@ -1,4 +1,5 @@
 App = {
+  hasPrivacyMode: false,
   web3Provider: null,
   contracts: {},
   instances: {},
@@ -9,65 +10,62 @@ App = {
 
   initWeb3: function () {
     // Initialize web3 and set the provider to the testRPC.
-    if (typeof web3 !== 'undefined') {
+    if (typeof ethereum !== 'undefined') {
+      console.log('injected web3');
+      App.web3Provider = ethereum;
+      App.hasPrivacyMode = true;
+    } else if (typeof web3 !== 'undefined') {
+      console.log('injected web3 (legacy)');
       App.web3Provider = web3.currentProvider;
-      web3 = new Web3(web3.currentProvider);
     } else {
       // set the provider you want from Web3.providers
+      console.log('provided web3');
       App.web3Provider = new Web3.providers.HttpProvider('http://127.0.0.1:9545');
-      web3 = new Web3(App.web3Provider);
     }
+
+    web3 = new Web3(App.web3Provider);
 
     return App.initContract();
   },
 
   initContract: function () {
-    $.getJSON('GastroAdvisorToken.json', function (data) {
-      // Get the necessary contract artifact file and instantiate it with truffle-contract.
-      App.contracts.GastroAdvisorToken = TruffleContract(data);
+    if (App.hasPrivacyMode) {
+      App.web3Provider.enable();
+    }
 
-      // Set the provider for our contract.
+    $.getJSON('GastroAdvisorToken.json', function (data) {
+      App.contracts.GastroAdvisorToken = TruffleContract(data);
       App.contracts.GastroAdvisorToken.setProvider(App.web3Provider);
     });
 
     $.getJSON('Contributions.json', function (data) {
-      // Get the necessary contract artifact file and instantiate it with truffle-contract.
       App.contracts.Contributions = TruffleContract(data);
-
-      // Set the provider for our contract.
       App.contracts.Contributions.setProvider(App.web3Provider);
     });
 
     $.getJSON('CrowdGenerator.json', function (data) {
-      // Get the necessary contract artifact file and instantiate it with truffle-contract.
       App.contracts.CrowdGenerator = TruffleContract(data);
-
-      // Set the provider for our contract.
       App.contracts.CrowdGenerator.setProvider(App.web3Provider);
     });
 
 
     $.getJSON('ForkRC.json', function (data) {
-      // Get the necessary contract artifact file and instantiate it with truffle-contract.
       App.contracts.ForkRC = TruffleContract(data);
-
-      // Set the provider for our contract.
       App.contracts.ForkRC.setProvider(App.web3Provider);
     });
 
     $.getJSON('ForkPreIco.json', function (data) {
-      // Get the necessary contract artifact file and instantiate it with truffle-contract.
       App.contracts.ForkPreIco = TruffleContract(data);
-
-      // Set the provider for our contract.
       App.contracts.ForkPreIco.setProvider(App.web3Provider);
     });
 
-    $.getJSON('CappedBountyMinter.json', function (data) {
-      // Get the necessary contract artifact file and instantiate it with truffle-contract.
-      App.contracts.CappedBountyMinter = TruffleContract(data);
+    $.getJSON('ForkIco.json', function (data) {
+      App.contracts.ForkIco = TruffleContract(data);
+      App.contracts.ForkIco.setProvider(App.web3Provider);
+    });
 
-      // Set the provider for our contract.
+    $.getJSON('CappedBountyMinter.json', function (data) {
+      App.contracts.CappedBountyMinter = TruffleContract(data);
       App.contracts.CappedBountyMinter.setProvider(App.web3Provider);
     });
   },
