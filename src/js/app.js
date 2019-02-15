@@ -73,6 +73,11 @@ App = {
       App.contracts.CappedDelivery = TruffleContract(data);
       App.contracts.CappedDelivery.setProvider(App.web3Provider);
     });
+
+    $.getJSON('GroupForkTimelock.json', function (data) {
+      App.contracts.GroupForkTimelock = TruffleContract(data);
+      App.contracts.GroupForkTimelock.setProvider(App.web3Provider);
+    });
   },
 };
 
