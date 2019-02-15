@@ -68,6 +68,11 @@ App = {
       App.contracts.CappedBountyMinter = TruffleContract(data);
       App.contracts.CappedBountyMinter.setProvider(App.web3Provider);
     });
+
+    $.getJSON('CappedDelivery.json', function (data) {
+      App.contracts.CappedDelivery = TruffleContract(data);
+      App.contracts.CappedDelivery.setProvider(App.web3Provider);
+    });
   },
 };
 
